@@ -17,8 +17,10 @@ Automate an iterative Copilot-driven review loop: trigger a GitHub Copilot
 review, address its feedback one comment at a time, then re-trigger Copilot
 to review again. Repeat up to 2 cycles until all critical issues are resolved.
 
-Named after Ralph Wiggum: the agent keeps asking Copilot "is this better now?"
-until it's satisfied — or gives up after 2 tries.
+This is an **in-session** loop — one long agent context that iterates internally.
+It is not the [Ralph Wiggum pattern](https://ghuntley.com/ralph/), which is an
+external shell loop that spawns a fresh agent session per comment. For that,
+see the `ralph-wiggum-loop` skill instead.
 
 ## Prerequisites
 
@@ -142,7 +144,7 @@ Otherwise continue to the next iteration (back to step 2a).
 Post a final comment on the PR:
 
 ```
-## Ralph Wiggum Loop — Summary
+## Copilot Review Loop — Summary
 
 Completed N Copilot review cycle(s).
 

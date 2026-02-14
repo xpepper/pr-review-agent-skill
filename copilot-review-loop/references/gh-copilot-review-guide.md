@@ -3,7 +3,7 @@
 ## Purpose
 
 This guide explains how to trigger a GitHub Copilot review from the CLI,
-which is the key mechanism powering the Ralph Wiggum Loop.
+which is the key mechanism powering the Copilot Review Loop.
 
 ## Recommended: gh-copilot-review extension
 
