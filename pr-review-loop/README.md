@@ -27,6 +27,29 @@ without losing progress. Each fix is committed and pushed before moving on.
 npx skills add xpepper/pr-review-agent-skill/pr-review-loop -a claude-code
 ```
 
+## Usage
+
+Once installed, just describe what you want — the agent activates the skill automatically:
+
+```
+Address all open review comments on this PR
+```
+```
+Work through the code review feedback on PR #42
+```
+```
+Fix the review comments left by @alice on this pull request
+```
+
+You can also invoke it explicitly by naming the skill:
+
+```
+Use pr-review-loop on PR #123
+```
+```
+Run the PR review loop on this branch
+```
+
 ## Optional: Perplexity for deep research
 
 If you have the [Perplexity Web Research skill](https://github.com/xpepper/perplexity-agent-skill)

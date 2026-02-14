@@ -15,6 +15,15 @@ allowed-tools: Bash(gh:*)
 
 Address all open PR review comments one at a time using an opinionated, resumable workflow. Works with comments from any reviewer (human or bot).
 
+## Typical invocations
+
+Users trigger this skill with prompts like:
+
+- "Address all open review comments on this PR"
+- "Work through the code review feedback on PR #42"
+- "Fix the review comments left by @alice on this pull request"
+- "Use pr-review-loop on PR #123"
+
 ## Prerequisites
 
 - `gh` CLI (preferred). If unavailable, fall back to the GitHub REST API.
