@@ -26,7 +26,7 @@ Users trigger this skill with prompts like:
 
 ## Prerequisites
 
-- `gh` CLI (preferred). If unavailable, fall back to the GitHub REST API.
+- `gh` CLI (preferred). If unavailable, fall back to any tool available to interact with GitHub.
 - The PR branch must be checked out locally.
 
 ## Process
