@@ -18,13 +18,13 @@ without losing progress. Each fix is committed and pushed before moving on.
 
 ## Prerequisites
 
-- `gh` CLI (recommended) — falls back to GitHub REST API if unavailable
+- `gh` CLI (recommended).
 - PR branch checked out locally
 
 ## Install
 
 ```bash
-npx skills add xpepper/pr-review-agent-skill/pr-review-loop -a claude-code
+npx skills add xpepper/pr-review-agent-skill/pr-review-loop
 ```
 
 ## Usage
@@ -52,5 +52,4 @@ Run the PR review loop on this branch
 
 ## Optional: Perplexity for deep research
 
-If you have the [Perplexity Web Research skill](https://github.com/xpepper/perplexity-agent-skill)
-installed, the agent will use it for research-heavy triage decisions.
+If you have the [Perplexity Web Research skill](https://github.com/xpepper/perplexity-agent-skill) installed, the agent will use it for research-heavy triage decisions.
