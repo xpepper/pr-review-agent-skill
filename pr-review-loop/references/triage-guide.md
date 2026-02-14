@@ -9,6 +9,7 @@ Indicators:
 - Reviewer explicitly says "blocking", "must fix", "required"
 - Correctness bug or security issue
 - Breaks tests or build
+- Data loss risk
 - Violates project conventions that are explicitly documented
 
 ## SHOULD_FIX
