@@ -22,11 +22,12 @@ Check whether `PR_COMMENTS_PLAN.md` exists in the current directory.
    gh pr view --json number,title,url,headRefName
    ```
 
-2. Fetch all open, unresolved review comments:
+2. Fetch all review comments:
    ```bash
    gh api repos/{owner}/{repo}/pulls/{pr}/comments \
-     --jq '.[] | select(.resolved == false)'
+     --jq '.[]'
    ```
+   > **Note:** The GitHub REST API does not expose a `.resolved` field on review comment objects; unresolved status is tracked in `PR_COMMENTS_PLAN.md`.
 
 3. Triage every comment into one of:
    - **MUST_FIX** — correctness bug, security flaw, broken build, or data loss risk
