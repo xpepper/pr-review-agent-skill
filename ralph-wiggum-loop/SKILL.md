@@ -1,0 +1,164 @@
+# Ralph Wiggum Loop
+
+## Purpose
+
+Automate an iterative Copilot-driven review loop: trigger a GitHub Copilot
+review, address its feedback one comment at a time, then re-trigger Copilot
+to review again. Repeat up to 2 cycles until all critical issues are resolved.
+
+Named after Ralph Wiggum: the agent keeps asking Copilot "is this better now?"
+until it's satisfied — or gives up after 2 tries.
+
+## Prerequisites
+
+- `gh` CLI (required)
+- `gh-copilot-review` extension (recommended — see `references/gh-copilot-review-guide.md`)
+  ```bash
+  gh extension install ChrisCarini/gh-copilot-review
+  ```
+  Fallback if not installed: `gh pr review --request copilot`
+- `pr-review-loop` skill (optional — if installed, the inner loop is delegated to it)
+- The PR branch must be checked out locally
+
+## Process
+
+### Step 1 — Pre-flight
+
+Inspect the project for safeguard conventions by checking these files (if they exist):
+- `CLAUDE.md`, `AGENTS.md`
+- `Makefile`
+- `.github/workflows/`
+- `README.md`
+
+Identify all required safeguards (tests, compilation, linting, formatting, etc.).
+Run all of them. If any fail, stop immediately and report — do not proceed.
+
+### Step 2 — Outer loop (max 2 iterations)
+
+Repeat up to 2 times:
+
+#### 2a. Request Copilot review
+
+Check if `gh-copilot-review` extension is installed:
+```bash
+gh extension list | grep copilot-review
+```
+
+If installed (preferred):
+```bash
+gh copilot-review [<number> | <url>]
+```
+
+If not installed (fallback):
+```bash
+gh pr review --request copilot
+```
+
+#### 2b. Wait for Copilot to complete
+
+Read `references/gh-copilot-review-guide.md` for the polling approach.
+
+Record the current count of unresolved `copilot[bot]` comments before triggering.
+Poll every 15 seconds until new comments appear. If no new comments after 3 minutes,
+stop and report timeout — do not proceed.
+
+#### 2c. Collect unresolved Copilot comments
+
+Fetch all unresolved comments authored by `copilot[bot]`. Ignore comments from
+human reviewers (those are handled by the `pr-review-loop` skill).
+
+```bash
+gh api repos/{owner}/{repo}/pulls/{pr}/comments \
+  --jq '.[] | select(.user.login == "copilot[bot]") | select(.resolved == false)'
+```
+
+If there are no unresolved Copilot comments, stop — nothing to do.
+
+#### 2d. Address comments — inner loop
+
+**If `pr-review-loop` skill is available:**
+Invoke the `pr-review-loop` skill, passing only the Copilot comments collected
+in step 2c as the scope. It will handle triage, one-at-a-time fixes, and replies.
+
+**If `pr-review-loop` skill is NOT available:**
+Follow this process for each comment, one at a time (MUST_FIX first, then SHOULD_FIX):
+
+Triage categories (see below):
+- MUST_FIX: blocking correctness issue, security flaw, or broken build
+- SHOULD_FIX: non-blocking improvement worth addressing
+- PARK: valid but out of scope for this PR — reply with reasoning, open follow-up issue
+- OUT_OF_SCOPE: does not apply — reply with rejection reasoning
+
+For each MUST_FIX and SHOULD_FIX comment:
+
+1. **Assess complexity:**
+   - Trivial (rename, small fix): fix directly
+   - Non-trivial: write plan to `.pr-review/plan-<comment-id>.md` first
+
+2. **Run safeguards** — all must pass before touching code
+
+3. **Fix or park the comment**
+
+4. **Run safeguards again** — all must pass
+
+5. **Commit and push:**
+   ```bash
+   git add <changed files>
+   git commit -m "<conventional commit describing the fix>"
+   git push
+   ```
+
+6. **Reply to the comment** — explain fix, deferral, or rejection
+
+7. **Resolve the comment on GitHub**
+
+8. **Delete plan file** if one was created:
+   ```bash
+   rm .pr-review/plan-<comment-id>.md
+   ```
+
+#### 2e. Check stop conditions
+
+Stop iterating if any of:
+- No MUST_FIX Copilot comments remain after this pass
+- Only OUT_OF_SCOPE Copilot comments remain
+- This was the 2nd iteration
+
+Otherwise continue to the next iteration (back to step 2a).
+
+### Step 3 — Summary
+
+Post a final comment on the PR:
+
+```
+## Ralph Wiggum Loop — Summary
+
+Completed N Copilot review cycle(s).
+
+### Fixed
+- [commit abc1234] <description> (Copilot comment #<id>)
+- ...
+
+### Parked
+- <description> — deferred, tracked in #<issue>
+- ...
+
+### Rejected
+- <description> — <reason>
+- ...
+```
+
+## Resumability
+
+This skill can be interrupted and restarted in a fresh context at any point.
+
+On restart:
+1. Run pre-flight (Step 1)
+2. Check for an existing `.pr-review/plan-*.md` — if found, continue mid-fix from Step 4b
+3. Re-fetch unresolved Copilot comments — already-resolved ones won't appear
+4. Continue the outer loop from the current state
+
+## State Directory
+
+`.pr-review/` at the repo root (should be gitignored by the project).
+- `plan-<comment-id>.md` — plan for the comment currently in progress (deleted after resolution)
