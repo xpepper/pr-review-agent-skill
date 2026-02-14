@@ -81,7 +81,7 @@ gh pr review --request copilot
 Read `references/gh-copilot-review-guide.md` for the polling approach.
 
 Record the current count of unresolved `copilot[bot]` comments before triggering.
-Poll every 15 seconds until new comments appear. If no new comments after 3 minutes,
+Poll every 30 seconds until new comments appear. If no new comments after 10 minutes,
 stop and report timeout — do not proceed.
 
 #### 2c. Collect unresolved Copilot comments
@@ -143,7 +143,7 @@ For each MUST_FIX and SHOULD_FIX comment:
 Stop iterating if any of:
 - No MUST_FIX Copilot comments remain after this pass
 - Only OUT_OF_SCOPE Copilot comments remain
-- This was the 2nd iteration
+- This was the 10th iteration
 
 Otherwise continue to the next iteration (back to step 2a).
 

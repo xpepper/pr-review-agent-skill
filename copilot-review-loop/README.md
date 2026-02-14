@@ -17,8 +17,7 @@ If the `pr-review-loop` skill is also installed, delegates the inner loop to it.
 
 ## Key property: resumable
 
-Can be interrupted and restarted in a fresh context window at any point
-without losing progress.
+Can be interrupted and restarted in a fresh context window at any point without losing progress.
 
 ## Prerequisites
 
@@ -33,7 +32,7 @@ without losing progress.
 ## Install
 
 ```bash
-npx skills add xpepper/pr-review-agent-skill/copilot-review-loop -a claude-code
+npx skills add xpepper/pr-review-agent-skill/copilot-review-loop
 ```
 
 ## Usage
