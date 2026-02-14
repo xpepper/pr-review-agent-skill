@@ -88,9 +88,28 @@ If they fail, fix the regression before moving on — do not skip this step.
 
 **4e. Commit and push**
 
+Each comment gets its own focused commit. Reference the comment author in the message body.
+
 ```bash
 git add <changed files>
-git commit -m "<conventional commit message describing the fix>"
+git commit -m "<conventional commit message describing the fix>
+
+Addresses PR comment from @<reviewer>."
+git push
+```
+
+Example commit flow across multiple comments:
+```bash
+# Comment 1: Add missing documentation
+git commit -m "docs: add module-level documentation for MetricsRecorder
+
+Addresses PR comment from @reviewer about missing module docs."
+git push
+
+# Comment 2: Use Duration instead of i64
+git commit -m "refactor: use Duration type for timing parameters
+
+Addresses PR comment from @reviewer - improves type safety."
 git push
 ```
 
@@ -109,11 +128,34 @@ gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/replies \
 
 **4g. Resolve the comment**
 
-Mark the comment as resolved on GitHub.
+Mark the comment as resolved on GitHub using GraphQL (the REST API does not support resolution).
 
+First, find the thread ID for the comment:
 ```bash
-gh api repos/{owner}/{repo}/pulls/comments/{comment_id} \
-  --method PATCH -f resolved=true
+gh api graphql -f query='
+query {
+  repository(owner: "{owner}", name: "{repo}") {
+    pullRequest(number: {pr_number}) {
+      reviewThreads(first: 50) {
+        nodes {
+          id
+          isResolved
+          comments(first: 1) { nodes { body } }
+        }
+      }
+    }
+  }
+}'
+```
+
+Then resolve the thread:
+```bash
+gh api graphql -f query='
+mutation {
+  resolveReviewThread(input: {threadId: "{thread_id}"}) {
+    thread { id isResolved }
+  }
+}'
 ```
 
 **4h. Delete plan file**
@@ -126,6 +168,23 @@ rm .pr-review/plan-<comment-id>.md
 ### Step 5 — Stop condition
 
 Stop when no MUST_FIX or SHOULD_FIX comments remain.
+
+If you prefer to batch-resolve all threads at once rather than one by one, you can do so here:
+```bash
+gh api graphql -f query='
+query {
+  repository(owner: "{owner}", name: "{repo}") {
+    pullRequest(number: {pr_number}) {
+      reviewThreads(first: 50) {
+        nodes { id isResolved comments(first: 1) { nodes { body } } }
+      }
+    }
+  }
+}' | jq -r '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | .id' \
+  | while read thread_id; do
+    gh api graphql -f query="mutation { resolveReviewThread(input: {threadId: \"$thread_id\"}) { thread { id } } }"
+  done
+```
 
 ### Step 6 — Summary
 
@@ -163,3 +222,10 @@ This means no progress is ever lost. Each fix is committed and pushed before mov
 
 `.pr-review/` at the repo root (gitignored by the project).
 - `plan-<comment-id>.md` — plan for the comment currently in progress (deleted after resolution)
+
+## Do Not
+
+- Bundle all PR feedback into one large commit
+- Make multiple unrelated changes in a single commit
+- Push all changes at once without intermediate commits
+- Leave comments unresolved after addressing them
