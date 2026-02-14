@@ -107,3 +107,10 @@ Each session is minimal: one triage pass or one comment fix.
 rm -f CODE_REVIEW_PLAN.md PR_COMMENTS_PLAN.md PR_REVIEW_DONE
 rm -rf .pr-review/
 ```
+
+## Do Not
+
+- Run the loop with `--dangerously-skip-permissions` on a repository you do not fully trust
+- Let the loop run unattended past the first few iterations without reviewing what the agent committed
+- Bundle all PR feedback into one large commit (each agent session commits at most one fix)
+- Delete `PR_COMMENTS_PLAN.md` while the loop is running — this is the shared state file

@@ -183,3 +183,11 @@ On restart:
 
 `.pr-review/` at the repo root (should be gitignored by the project).
 - `plan-<comment-id>.md` — plan for the comment currently in progress (deleted after resolution)
+
+## Do Not
+
+- Bundle all PR feedback into one large commit
+- Make multiple unrelated changes in a single commit
+- Push all changes at once without intermediate commits
+- Leave Copilot comments unresolved after addressing them
+- Proceed to the next Copilot review cycle if MUST_FIX items remain unresolved
