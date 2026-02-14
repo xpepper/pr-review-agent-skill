@@ -1,6 +1,12 @@
 ---
 name: ralph-wiggum-loop
 description: Use when automating an iterative GitHub Copilot review loop on a PR — triggers Copilot review, addresses its feedback one comment at a time, and re-triggers up to 2 cycles until all critical issues are resolved.
+license: MIT
+compatibility: Requires gh CLI. The gh-copilot-review extension is recommended (gh extension install ChrisCarini/gh-copilot-review). PR branch must be checked out locally.
+metadata:
+  author: Pietro Di Bello
+  version: "1.0.0"
+allowed-tools: Bash(gh:*)
 ---
 
 # Ralph Wiggum Loop

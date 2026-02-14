@@ -1,6 +1,12 @@
 ---
 name: pr-review-loop
 description: Use when addressing open PR review comments — triages each comment (MUST_FIX, SHOULD_FIX, PARK, OUT_OF_SCOPE), fixes one at a time, commits, replies, and resolves. Works with any reviewer (human or bot). Resumable across context windows.
+license: MIT
+compatibility: Requires gh CLI (recommended) or GitHub token for REST API fallback. PR branch must be checked out locally.
+metadata:
+  author: Pietro Di Bello
+  version: "1.0.0"
+allowed-tools: Bash(gh:*)
 ---
 
 # PR Review Loop

@@ -39,6 +39,45 @@ npx skills add xpepper/pr-review-agent-skill/ralph-wiggum-loop -a claude-code
 - `gh` CLI (recommended) or a GitHub token for REST API fallback
 - Git
 
+## Development
+
+### Skill structure
+
+Each skill is a directory containing:
+
+```
+<skill-name>/
+  SKILL.md          # required — skill definition with YAML frontmatter
+  README.md         # recommended — user-facing documentation
+  references/       # optional — supporting reference documents
+```
+
+The `SKILL.md` frontmatter must include at minimum `name` and `description`. See existing skills for the full set of supported fields (`license`, `compatibility`, `metadata`, `allowed-tools`).
+
+### Packaging
+
+After adding or modifying a skill, regenerate the `.skill` package:
+
+```bash
+./package-skill.sh
+```
+
+The script auto-discovers all directories that contain a `SKILL.md` and packages each one. Generated `.skill` files are gitignored (build artifacts).
+
+### Testing a skill
+
+After pushing changes, verify a skill installs and removes correctly:
+
+```bash
+# Install (--yes skips interactive prompts)
+npx skills add xpepper/pr-review-agent-skill/<skill-name> -a claude-code --yes
+
+# Verify the skill description appears and the install path looks correct, then remove
+npx skills remove <skill-name> -a claude-code --yes
+```
+
+Note: without `--global`, skills are installed project-locally into `.agents/skills/` (gitignored).
+
 ## License
 
 MIT
