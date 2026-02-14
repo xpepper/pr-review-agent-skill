@@ -52,12 +52,6 @@ gh pr view --json comments,reviews
 gh api repos/{owner}/{repo}/pulls/{pr}/comments
 ```
 
-Fallback (REST API):
-```bash
-curl -H "Authorization: token $GITHUB_TOKEN" \
-  https://api.github.com/repos/{owner}/{repo}/pulls/{pr}/comments
-```
-
 Filter to only unresolved comments.
 
 ### Step 3 — Triage
@@ -68,10 +62,7 @@ Classify every unresolved comment as: MUST_FIX, SHOULD_FIX, PARK, or OUT_OF_SCOP
 
 Triage all comments before acting on any.
 
-If Perplexity is available and a comment requires external knowledge to classify (e.g., library idioms, language conventions), use it:
-```bash
-llm -m sonar 'your question here'
-```
+If Perplexity or other research tools are available and a comment requires external knowledge to classify (e.g., library idioms, language conventions), use them to inform your decision.
 
 ### Step 4 — Process one comment at a time
 
@@ -148,7 +139,7 @@ gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/replies \
 
 **4g. Resolve the comment**
 
-Mark the comment as resolved on GitHub using GraphQL (the REST API does not support resolution).
+Mark the comment as resolved on GitHub.
 
 First, find the thread ID for the comment:
 ```bash
