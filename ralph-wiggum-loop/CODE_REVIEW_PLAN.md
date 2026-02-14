@@ -22,12 +22,40 @@ Check whether `PR_COMMENTS_PLAN.md` exists in the current directory.
    gh pr view --json number,title,url,headRefName
    ```
 
-2. Fetch all review comments:
+2. Fetch all review threads, including resolution status (the REST API does not
+   expose this — use GraphQL):
    ```bash
-   gh api repos/{owner}/{repo}/pulls/{pr}/comments \
-     --jq '.[]'
+   gh api graphql -f query='
+     query($owner: String!, $repo: String!, $number: Int!) {
+       repository(owner: $owner, name: $repo) {
+         pullRequest(number: $number) {
+           reviewThreads(first: 100) {
+             nodes {
+               isResolved
+               isOutdated
+               comments(first: 10) {
+                 nodes {
+                   id
+                   databaseId
+                   body
+                   path
+                   line
+                   author { login }
+                 }
+               }
+             }
+           }
+         }
+       }
+     }' \
+     -F owner=OWNER \
+     -F repo=REPO \
+     -F number=PR_NUMBER \
+     | jq '.data.repository.pullRequest.reviewThreads.nodes[]
+           | select(.isResolved == false and .isOutdated == false)'
    ```
-   > **Note:** The GitHub REST API does not expose a `.resolved` field on review comment objects; unresolved status is tracked in `PR_COMMENTS_PLAN.md`.
+   Only include threads where `isResolved` is `false`. Skip already-resolved
+   and outdated threads entirely.
 
 3. Triage every comment into one of:
    - **MUST_FIX** — correctness bug, security flaw, broken build, or data loss risk
@@ -49,6 +77,22 @@ Check whether `PR_COMMENTS_PLAN.md` exists in the current directory.
    - Then: any SHOULD_FIX with `[ ]`
    - If none remain → write the file `PR_REVIEW_DONE` and print:
      `"All comments addressed. Stopping loop."` then stop.
+
+   Before working on the selected item, verify it is still unresolved on GitHub
+   (it may have been resolved manually since the plan was written):
+   ```bash
+   gh api graphql -f query='
+     query($id: ID!) {
+       node(id: $id) {
+         ... on PullRequestReviewComment {
+           pullRequestReviewThread { isResolved }
+         }
+       }
+     }' \
+     -F id=COMMENT_NODE_ID
+   ```
+   If `isResolved` is `true`, mark the item `[x already resolved on GitHub]`
+   in `PR_COMMENTS_PLAN.md` and **stop** — let the loop pick the next item.
 
 2. Check for a `.pr-review/plan-<comment-id>.md` file — if it exists, a
    previous session was interrupted mid-fix. Skip to step 5.
