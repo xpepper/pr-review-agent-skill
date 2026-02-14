@@ -1,6 +1,6 @@
 ---
 name: copilot-review-loop
-description: Use when automating an iterative GitHub Copilot review loop on a PR — triggers Copilot review, addresses its feedback one comment at a time, and re-triggers up to 2 cycles until all critical issues are resolved.
+description: Use when you want GitHub Copilot to review a PR and automatically address its feedback within the current agent session. Copilot-specific and in-session — for any reviewer (human or bot), use pr-review-loop; for a fresh-context-per-comment approach, use ralph-wiggum-loop.
 license: MIT
 compatibility: Requires gh CLI. The gh-copilot-review extension is recommended (gh extension install ChrisCarini/gh-copilot-review). PR branch must be checked out locally.
 metadata:
@@ -21,6 +21,15 @@ This is an **in-session** loop — one long agent context that iterates internal
 It is not the [Ralph Wiggum pattern](https://ghuntley.com/ralph/), which is an
 external shell loop that spawns a fresh agent session per comment. For that,
 see the `ralph-wiggum-loop` skill instead.
+
+## Typical invocations
+
+Users trigger this skill with prompts like:
+
+- "Request a Copilot review on this PR and address the feedback"
+- "Trigger a GitHub Copilot review and fix the issues it finds"
+- "Run copilot-review-loop on PR #42"
+- "Use copilot-review-loop to get and address Copilot's review comments"
 
 ## Prerequisites
 

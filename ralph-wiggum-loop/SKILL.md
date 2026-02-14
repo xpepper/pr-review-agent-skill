@@ -1,6 +1,6 @@
 ---
 name: ralph-wiggum-loop
-description: Use when setting up an external shell loop to address PR review comments one at a time across fresh agent sessions. Provides CODE_REVIEW_PLAN.md template and PR_COMMENTS_PLAN.md state file format for the Ralph Wiggum pattern.
+description: Use when addressing PR review comments across fresh agent sessions — each comment gets its own agent invocation via an external shell loop, avoiding context window exhaustion. For an in-session approach, use pr-review-loop or copilot-review-loop instead.
 license: MIT
 compatibility: Requires gh CLI. Works with any agent that accepts piped instructions (claude -p, codex exec, etc.). PR branch must be checked out locally.
 metadata:
@@ -19,6 +19,26 @@ plan file, does exactly one unit of work (triage or fix), then exits. The shell
 loop handles repetition.
 
 This avoids context window exhaustion and works with any agent.
+
+## How to invoke
+
+This skill is **not invoked via chat**. Instead, you run a shell loop in your
+terminal — the loop pipes `CODE_REVIEW_PLAN.md` to a fresh agent session for
+each iteration:
+
+```bash
+# Claude
+while [ ! -f PR_REVIEW_DONE ]; do
+  cat CODE_REVIEW_PLAN.md | claude -p --dangerously-skip-permissions
+done
+
+# Codex
+while [ ! -f PR_REVIEW_DONE ]; do
+  cat CODE_REVIEW_PLAN.md | codex exec --yolo -
+done
+```
+
+See **Setup** below to get `CODE_REVIEW_PLAN.md` into your project.
 
 ## Setup (once per PR)
 

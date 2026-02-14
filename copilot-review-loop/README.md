@@ -35,3 +35,23 @@ without losing progress.
 ```bash
 npx skills add xpepper/pr-review-agent-skill/copilot-review-loop -a claude-code
 ```
+
+## Usage
+
+Once installed, describe what you want — the agent activates the skill automatically:
+
+```
+Request a Copilot review on this PR and address the feedback
+```
+```
+Trigger a GitHub Copilot review and fix the issues it finds
+```
+
+You can also invoke it explicitly:
+
+```
+Run copilot-review-loop on PR #42
+```
+```
+Use copilot-review-loop to get and address Copilot's review comments
+```

@@ -14,6 +14,25 @@ Works with any agent that accepts piped instructions.
 - Agent-agnostic — works with Claude, Codex, Cursor, or any future agent
 - Transparent — `PR_COMMENTS_PLAN.md` shows exactly what's done and what's pending
 
+## Usage
+
+This skill is not invoked via chat. You run a shell loop in your terminal —
+the loop is the invocation:
+
+```bash
+# Claude
+while [ ! -f PR_REVIEW_DONE ]; do
+  cat CODE_REVIEW_PLAN.md | claude -p --dangerously-skip-permissions
+done
+
+# Codex
+while [ ! -f PR_REVIEW_DONE ]; do
+  cat CODE_REVIEW_PLAN.md | codex exec --yolo -
+done
+```
+
+See **Setup** below to get `CODE_REVIEW_PLAN.md` into your project first.
+
 ## Setup
 
 ### 1. Install the skill
