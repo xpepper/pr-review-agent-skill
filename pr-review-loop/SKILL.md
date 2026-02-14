@@ -1,6 +1,6 @@
 ---
 name: pr-review-loop
-description: Use when addressing open PR review comments from any reviewer (human or bot) within the current agent session. Single-session, in-context loop — does not require an external shell command. For a fresh-context-per-comment approach, use ralph-wiggum-loop instead.
+description: Use when addressing open PR review comments from any reviewer (human or bot) within the current agent session. For a fresh-context-per-comment approach, use ralph-wiggum-loop instead.
 license: MIT
 compatibility: Requires gh CLI or any other tool to interact with GitHub. PR branch must be checked out locally.
 metadata:

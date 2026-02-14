@@ -1,6 +1,6 @@
 ---
 name: ralph-wiggum-loop
-description: Use when addressing PR review comments across fresh agent sessions — each comment gets its own agent invocation via an external shell loop, avoiding context window exhaustion. For an in-session approach, use pr-review-loop or copilot-review-loop instead.
+description: Use when context window exhaustion is a concern or when addressing a large volume of PR comments — spawns a fresh agent session per comment via an external shell loop. For an in-session approach, use pr-review-loop or copilot-review-loop instead.
 license: MIT
 compatibility: Requires gh CLI. Works with any agent that accepts piped instructions (claude -p, codex exec, etc.). PR branch must be checked out locally.
 metadata:
