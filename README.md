@@ -12,7 +12,7 @@ Works with any reviewer (human or bot).
 
 **Install:**
 ```bash
-npx skills add xpepper/pr-review-agent-skill/pr-review-loop -a claude-code
+npx skills add xpepper/pr-review-agent-skill/pr-review-loop
 ```
 
 [See skill README →](pr-review-loop/README.md)
@@ -27,7 +27,7 @@ issues are resolved or 2 cycles are complete. Runs within a single agent session
 
 **Install:**
 ```bash
-npx skills add xpepper/pr-review-agent-skill/copilot-review-loop -a claude-code
+npx skills add xpepper/pr-review-agent-skill/copilot-review-loop
 ```
 
 [See skill README →](copilot-review-loop/README.md)
@@ -43,7 +43,7 @@ stops. Works with any agent (Claude, Codex, Cursor, etc.).
 
 **Install:**
 ```bash
-npx skills add xpepper/pr-review-agent-skill/ralph-wiggum-loop -a claude-code
+npx skills add xpepper/pr-review-agent-skill/ralph-wiggum-loop
 ```
 
 [See skill README →](ralph-wiggum-loop/README.md)
@@ -86,10 +86,10 @@ After pushing changes, verify a skill installs and removes correctly:
 
 ```bash
 # Install (--yes skips interactive prompts)
-npx skills add xpepper/pr-review-agent-skill/<skill-name> -a claude-code --yes
+npx skills add xpepper/pr-review-agent-skill/<skill-name> --yes
 
 # Verify the skill description appears and the install path looks correct, then remove
-npx skills remove <skill-name> -a claude-code --yes
+npx skills remove <skill-name>
 ```
 
 Note: without `--global`, skills are installed project-locally into `.agents/skills/` (gitignored).
