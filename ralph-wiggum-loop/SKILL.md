@@ -44,8 +44,14 @@ See **Setup** below to get `CODE_REVIEW_PLAN.md` into your project.
 
 1. Copy `CODE_REVIEW_PLAN.md` from this skill to your project root:
    ```bash
+   # Project-local install (default — installed without --global):
+   cp .agents/skills/ralph-wiggum-loop/CODE_REVIEW_PLAN.md .
+
+   # Global install (installed with --global):
    cp ~/.claude/skills/ralph-wiggum-loop/CODE_REVIEW_PLAN.md .
    ```
+
+   The path depends on how the skill was installed. Check `.agents/skills/` first (project-local); if not found, use your global skills directory.
 
 2. Optionally add both files to `.gitignore`:
    ```
