@@ -1,3 +1,8 @@
+---
+name: ralph-wiggum-loop
+description: Use when automating an iterative GitHub Copilot review loop on a PR — triggers Copilot review, addresses its feedback one comment at a time, and re-triggers up to 2 cycles until all critical issues are resolved.
+---
+
 # Ralph Wiggum Loop
 
 ## Purpose

@@ -1,3 +1,8 @@
+---
+name: pr-review-loop
+description: Use when addressing open PR review comments — triages each comment (MUST_FIX, SHOULD_FIX, PARK, OUT_OF_SCOPE), fixes one at a time, commits, replies, and resolves. Works with any reviewer (human or bot). Resumable across context windows.
+---
+
 # PR Review Loop
 
 ## Purpose
