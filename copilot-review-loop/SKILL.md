@@ -107,11 +107,8 @@ in step 2c as the scope. It will handle triage, one-at-a-time fixes, and replies
 **If `pr-review-loop` skill is NOT available:**
 Follow this process for each comment, one at a time (MUST_FIX first, then SHOULD_FIX):
 
-Triage categories (see below):
-- MUST_FIX: blocking correctness issue, security flaw, or broken build
-- SHOULD_FIX: non-blocking improvement worth addressing
-- PARK: valid but out of scope for this PR — reply with reasoning, open follow-up issue
-- OUT_OF_SCOPE: does not apply — reply with rejection reasoning
+Triage using the four categories defined in `references/triage-guide.md`
+(MUST_FIX, SHOULD_FIX, PARK, OUT_OF_SCOPE). Read that file before triaging.
 
 For each MUST_FIX and SHOULD_FIX comment:
 
