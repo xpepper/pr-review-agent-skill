@@ -19,11 +19,27 @@ npx skills add xpepper/pr-review-agent-skill/pr-review-loop -a claude-code
 
 ---
 
+### Copilot Review Loop
+
+An in-session Copilot-driven review loop: triggers Copilot review, addresses
+its feedback one comment at a time, and re-triggers Copilot until all critical
+issues are resolved or 2 cycles are complete. Runs within a single agent session.
+
+**Install:**
+```bash
+npx skills add xpepper/pr-review-agent-skill/copilot-review-loop -a claude-code
+```
+
+[See skill README →](copilot-review-loop/README.md)
+
+---
+
 ### Ralph Wiggum Loop
 
-An automated Copilot-driven review loop: triggers Copilot review, addresses
-its feedback one comment at a time, and re-triggers Copilot until all critical
-issues are resolved or 2 cycles are complete.
+The [Ralph Wiggum pattern](https://ghuntley.com/ralph/): an external shell loop
+that spawns a fresh agent session for each PR comment. Drop `CODE_REVIEW_PLAN.md`
+into your project root and run the loop — each invocation fixes one comment, then
+stops. Works with any agent (Claude, Codex, Cursor, etc.).
 
 **Install:**
 ```bash

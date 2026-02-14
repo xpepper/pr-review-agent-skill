@@ -1,8 +1,8 @@
-# Ralph Wiggum Loop
+# Copilot Review Loop
 
 An [Agent Skills](https://agentskills.io) skill that automates iterative
-GitHub Copilot review loops: trigger Copilot review, address its feedback
-one comment at a time, repeat up to 2 cycles.
+GitHub Copilot review loops within a single agent session: trigger Copilot
+review, address its feedback one comment at a time, repeat up to 2 cycles.
 
 ## What it does
 
@@ -33,5 +33,5 @@ without losing progress.
 ## Install
 
 ```bash
-npx skills add xpepper/pr-review-agent-skill/ralph-wiggum-loop -a claude-code
+npx skills add xpepper/pr-review-agent-skill/copilot-review-loop -a claude-code
 ```
