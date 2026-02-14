@@ -19,10 +19,18 @@ npx skills add xpepper/pr-review-agent-skill/pr-review-loop -a claude-code
 
 ---
 
-### Ralph Wiggum Loop *(coming soon)*
+### Ralph Wiggum Loop
 
-An automated Copilot review loop: triggers Copilot review, addresses feedback, and repeats
-until all critical issues are resolved.
+An automated Copilot-driven review loop: triggers Copilot review, addresses
+its feedback one comment at a time, and re-triggers Copilot until all critical
+issues are resolved or 2 cycles are complete.
+
+**Install:**
+```bash
+npx skills add xpepper/pr-review-agent-skill/ralph-wiggum-loop -a claude-code
+```
+
+[See skill README →](ralph-wiggum-loop/README.md)
 
 ---
 
