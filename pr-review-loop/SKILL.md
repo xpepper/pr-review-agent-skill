@@ -1,6 +1,6 @@
 ---
 name: pr-review-loop
-description: Use when addressing open PR review comments — triages each comment (MUST_FIX, SHOULD_FIX, PARK, OUT_OF_SCOPE), fixes one at a time, commits, replies, and resolves. Works with any reviewer (human or bot). Resumable across context windows.
+description: Use when addressing open PR review comments from any reviewer (human or bot) within the current agent session. Single-session, in-context loop — does not require an external shell command. For a fresh-context-per-comment approach, use ralph-wiggum-loop instead.
 license: MIT
 compatibility: Requires gh CLI (recommended) or GitHub token for REST API fallback. PR branch must be checked out locally.
 metadata:
