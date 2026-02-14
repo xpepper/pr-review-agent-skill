@@ -91,8 +91,10 @@ human reviewers (those are handled by the `pr-review-loop` skill).
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{pr}/comments \
-  --jq '.[] | select(.user.login == "copilot[bot]") | select(.resolved == false)'
+  --jq '.[] | select(.user.login == "copilot[bot]")'
 ```
+
+Fetch all Copilot comments. Use the count recorded before triggering (step 2b) to identify which are new.
 
 If there are no unresolved Copilot comments, stop — nothing to do.
 

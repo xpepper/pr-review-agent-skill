@@ -50,8 +50,10 @@ After triggering, Copilot review takes 30–120 seconds. Poll until new
 ```bash
 # Count current Copilot comments
 gh api repos/{owner}/{repo}/pulls/{pr}/comments \
-  --jq '[.[] | select(.user.login == "copilot[bot]") | select(.resolved == false)] | length'
+  --jq '[.[] | select(.user.login == "copilot[bot]")] | length'
 ```
+
+Record this count as the baseline. After triggering, poll until the count increases.
 
 Poll every 15 seconds. After 3 minutes with no new comments, stop and report timeout.
 
@@ -60,5 +62,7 @@ Poll every 15 seconds. After 3 minutes with no new comments, stop and report tim
 Filter by reviewer login `copilot[bot]`:
 ```bash
 gh api repos/{owner}/{repo}/pulls/{pr}/comments \
-  --jq '.[] | select(.user.login == "copilot[bot]") | select(.resolved == false)'
+  --jq '.[] | select(.user.login == "copilot[bot]")'
 ```
+
+Fetch all Copilot comments. Use the count delta from polling to identify which are new in this review cycle.
