@@ -154,7 +154,7 @@ This skill can be interrupted and restarted in a fresh context at any point.
 
 On restart:
 1. Run pre-flight (Step 1)
-2. Check for an existing `.pr-review/plan-*.md` — if found, continue mid-fix from Step 4b
+2. Check for an existing `.pr-review/plan-*.md` — if found, continue mid-fix from step 2d
 3. Re-fetch unresolved Copilot comments — already-resolved ones won't appear
 4. Continue the outer loop from the current state
 
