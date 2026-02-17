@@ -42,19 +42,29 @@ Inspect the project for safeguard conventions by checking these files (if they e
 Identify all required safeguards (tests, compilation, linting, formatting, etc.).
 Run all of them. If any fail, stop immediately and report — do not proceed on a broken baseline.
 
-### Step 2 — Collect
+### Step 2 — Get Current PR Number and Basic Info
 
-Fetch all unresolved PR comments.
-
-Preferred (gh CLI):
 ```bash
-gh pr view --json comments,reviews
-gh api repos/{owner}/{repo}/pulls/{pr}/comments
+# Get current PR details
+gh pr status
+
+# View PR with all comments
+gh pr view
+```
+
+### Step 3 — Collect Unresolved PR Comments
+
+```bash
+# Get review comments (comments on specific lines of code)
+gh api repos/{owner}/{repo}/pulls/{pr_number}/comments | jq '.[] | {id: .id, user: .user.login, author: .author.login, body: .body, created_at: .created_at, in_reply_to_id: .in_reply_to_id}'
+
+# For current repo, use variables:
+gh api repos/$(gh repo view --json owner,name | jq -r '.owner.login')/$(gh repo view --json owner,name | jq -r '.name')/pulls/$(gh pr view --json number | jq -r '.number')/comments | jq '.[] | {id: .id, user: .user.login, author: .author.login, body: .body, created_at: .created_at, in_reply_to_id: .in_reply_to_id}'
 ```
 
 Filter to only unresolved comments.
 
-### Step 3 — Triage
+### Step 4 — Triage
 
 Read `references/triage-guide.md`.
 
@@ -64,14 +74,14 @@ Triage all comments before acting on any.
 
 If Perplexity or other research tools are available and a comment requires external knowledge to classify (e.g., library idioms, language conventions), use them to inform your decision.
 
-### Step 4 — Process one comment at a time
+### Step 5 — Process ONE comment at a time
 
 Process in order: all MUST_FIX first, then SHOULD_FIX.
 Skip PARK and OUT_OF_SCOPE for now (they are handled in the summary).
 
 For each comment:
 
-**4a. Assess complexity**
+**5a. Assess complexity**
 
 Is this trivial (e.g., rename a function, fix a typo, adjust formatting)?
 - Yes → fix directly, no plan needed
@@ -82,22 +92,22 @@ The plan file must describe:
 - The approach to fix it
 - Files that will be changed
 
-**4b. Run safeguards**
+**5b. Run safeguards**
 
 Run all safeguards identified in Step 1. They must all pass before you touch any code.
 If they fail, stop and report.
 
-**4c. Fix or park**
+**5c. Fix or park**
 
 - Fix: implement the change
 - Park (if you discover mid-fix that it should be parked): write reasoning, revert any partial changes, no commit
 
-**4d. Run safeguards again**
+**5d. Run safeguards again**
 
 Run all safeguards. They must all pass.
 If they fail, fix the regression before moving on — do not skip this step.
 
-**4e. Commit and push**
+**5e. Commit and push**
 
 Each comment gets its own focused commit. Reference the comment author in the message body.
 
@@ -124,7 +134,7 @@ Addresses PR comment from @reviewer - improves type safety."
 git push
 ```
 
-**4f. Reply to the PR comment**
+**5f. Reply to the PR comment**
 
 Post a reply on the PR comment explaining:
 - What was done (for fixes: reference the commit)
@@ -137,7 +147,7 @@ gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/replies \
   -f body="<reply text>"
 ```
 
-**4g. Resolve the comment**
+**5g. Resolve the comment**
 
 Mark the comment as resolved on GitHub.
 
@@ -169,14 +179,14 @@ mutation {
 }'
 ```
 
-**4h. Delete plan file**
+**5h. Delete plan file**
 
 If a plan file was created, delete it:
 ```bash
 rm .pr-review/plan-<comment-id>.md
 ```
 
-### Step 5 — Stop condition
+### Step 6 — Stop condition
 
 Stop when no MUST_FIX or SHOULD_FIX comments remain.
 
@@ -197,7 +207,7 @@ query {
   done
 ```
 
-### Step 6 — Summary
+### Step 7 — Summary
 
 Post a final comment on the PR summarising:
 
