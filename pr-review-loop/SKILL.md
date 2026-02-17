@@ -143,7 +143,7 @@ Post a reply on the PR comment explaining:
 
 Preferred (gh CLI):
 ```bash
-gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/replies \
+gh api repos/{owner}/{repo}/pulls/{pull_number}/comments/{comment_id}/replies \
   -f body="<reply text>"
 ```
 
