@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI or any other tool to interact with GitHub. PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.2.0"
+  version: "1.3.0"
 allowed-tools: Bash(gh:*)
 ---
 
@@ -87,13 +87,15 @@ query($owner:String!, $name:String!, $number:Int!) {
 Use unresolved `reviewThreads` as the canonical list for processing. Do not drive the workflow from `/pulls/{pr}/comments` alone.
 
 ### Step 4 — Triage
-Read [the triage guide](references/triage-guide.md) for the specific classification framework and examples. If the guide is not available, use the MUST_FIX / SHOULD_FIX / PARK / OUT_OF_SCOPE classification with your own judgment (see definitions below).
+Read [the triage guide](references/triage-guide.md) for the specific classification framework and examples. If the guide is not available, use the MUST_FIX / SHOULD_FIX / PARK / OUT_OF_SCOPE / NEEDS_CLARIFICATION classification with your own judgment (see definitions below).
 
-Classify every unresolved comment as: MUST_FIX, SHOULD_FIX, PARK, or OUT_OF_SCOPE.
+Classify every unresolved comment as: MUST_FIX, SHOULD_FIX, PARK, OUT_OF_SCOPE, or NEEDS_CLARIFICATION.
 
 Triage all comments before acting on any.
 
 If a comment is non-actionable/no-op (e.g. acknowledgment, praise, emoji-only), classify as OUT_OF_SCOPE and reply with a short acknowledgment before resolving.
+
+If a comment's intent is genuinely ambiguous — multiple interpretations exist and each would lead to a meaningfully different change — classify as NEEDS_CLARIFICATION rather than guessing.
 
 If Perplexity or other research tools are available and a comment requires external knowledge to classify (e.g., library idioms, language conventions), use them to inform your decision.
 
@@ -101,6 +103,8 @@ If Perplexity or other research tools are available and a comment requires exter
 
 Process in order: all MUST_FIX first, then SHOULD_FIX.
 Skip PARK and OUT_OF_SCOPE for now (they are handled in the summary).
+
+**NEEDS_CLARIFICATION comments:** post one focused question as a reply to the thread (see format below), do **not** resolve the thread, and move on to the next comment. Do not implement anything.
 
 **Cascading comments:** When multiple comments form a cascade (e.g., changing a trait signature requires updating all impls, callers, and tests), group them into a single commit referencing all comment IDs. Implement the full cascade atomically — applying any single comment without the others would leave the code in an inconsistent state.
 
@@ -122,11 +126,29 @@ The plan file must describe:
 Run all safeguards identified in Step 1. They must all pass before you touch any code.
 If they fail, stop and report.
 
-**5c. Fix or park**
+**5c. Fix, park, or ask for clarification**
 
 - Fix: implement the change
 - Fix with adaptation: if the reviewer's suggestion is directionally right but the exact code won't compile or is otherwise infeasible, implement the closest working alternative. Document the constraint in your reply (Step 5f) so the reviewer understands why the implementation differs from their suggestion.
 - Park (if you discover mid-fix that it should be parked): write reasoning, revert any partial changes, no commit
+- Ask for clarification (if you discover mid-assessment that the intent is genuinely ambiguous): post one focused question to the thread (see below), do not resolve, no commit, move on
+
+**Clarification question format (for NEEDS_CLARIFICATION or mid-assessment uncertainty):**
+
+```bash
+cat > /tmp/pr-review-reply-{comment_id}.md <<'EOF'
+Thanks for the feedback! Before I make a change, I want to make sure I understand what you're after:
+
+<one specific, focused question — e.g. "Did you mean to rename this everywhere, or just at the call site?" or "Would you prefer approach A (…) or approach B (…)?">
+EOF
+
+jq -n --rawfile body /tmp/pr-review-reply-{comment_id}.md '{body:$body}' > /tmp/pr-review-reply-{comment_id}.json
+
+gh api repos/{owner}/{repo}/pulls/{pull_number}/comments/{comment_id}/replies \
+  --input /tmp/pr-review-reply-{comment_id}.json
+```
+
+Ask exactly **one** question. Do not list alternatives unless directly needed to frame the question. Leave the thread unresolved so the reviewer's answer re-surfaces it.
 
 **5d. Run safeguards again**
 
@@ -278,7 +300,13 @@ Post a final comment on the PR summarising:
 ### Rejected
 - Suggestion to use Y rejected: project convention is Z (comment by @carol)
 - ...
+
+### Awaiting Clarification
+- Asked @alice: "Did you mean to rename this everywhere, or just at the call site?" — thread left open
+- ...
 ```
+
+Omit any section that has no entries.
 
 Use a body file to avoid shell interpolation:
 ```bash

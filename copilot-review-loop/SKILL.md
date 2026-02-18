@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI. The gh-copilot-review extension is recommended (gh extension install ChrisCarini/gh-copilot-review). PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.0.0"
+  version: "1.1.0"
 allowed-tools: Bash(gh:*)
 ---
 
@@ -107,8 +107,8 @@ in step 2c as the scope. It will handle triage, one-at-a-time fixes, and replies
 **If `pr-review-loop` skill is NOT available:**
 Follow this process for each comment, one at a time (MUST_FIX first, then SHOULD_FIX):
 
-Triage using the four categories defined in `references/triage-guide.md`
-(MUST_FIX, SHOULD_FIX, PARK, OUT_OF_SCOPE). Read that file before triaging.
+Triage using the five categories defined in `references/triage-guide.md`
+(MUST_FIX, SHOULD_FIX, PARK, OUT_OF_SCOPE, NEEDS_CLARIFICATION). Read that file before triaging.
 
 For each MUST_FIX and SHOULD_FIX comment:
 
@@ -118,7 +118,25 @@ For each MUST_FIX and SHOULD_FIX comment:
 
 2. **Run safeguards** — all must pass before touching code
 
-3. **Fix or park the comment**
+3. **Fix, park, or ask for clarification**
+   - Fix or park as usual.
+   - If mid-assessment the intent is genuinely ambiguous: post one focused question (see format below), do **not** resolve the thread, skip steps 4–8, move on.
+
+   **Clarification question format:**
+   ```bash
+   cat > /tmp/pr-review-reply-{comment_id}.md <<'EOF'
+   Thanks for the feedback! Before I make a change, I want to make sure I understand what you're after:
+
+   <one specific, focused question>
+   EOF
+
+   jq -n --rawfile body /tmp/pr-review-reply-{comment_id}.md '{body:$body}' > /tmp/pr-review-reply-{comment_id}.json
+
+   gh api repos/{owner}/{repo}/pulls/{pull_number}/comments/{comment_id}/replies \
+     --input /tmp/pr-review-reply-{comment_id}.json
+   ```
+
+   Ask exactly **one** question. Leave the thread unresolved so the reviewer's answer re-surfaces it.
 
 4. **Run safeguards again** — all must pass
 
@@ -142,7 +160,7 @@ For each MUST_FIX and SHOULD_FIX comment:
 
 Stop iterating if any of:
 - No MUST_FIX Copilot comments remain after this pass
-- Only OUT_OF_SCOPE Copilot comments remain
+- Only OUT_OF_SCOPE or NEEDS_CLARIFICATION Copilot comments remain (awaiting reviewer input)
 - This was the 10th iteration
 
 Otherwise continue to the next iteration (back to step 2a).
@@ -167,7 +185,13 @@ Completed N Copilot review cycle(s).
 ### Rejected
 - <description> — <reason>
 - ...
+
+### Awaiting Clarification
+- Asked Copilot: "<question>" — thread left open (comment #<id>)
+- ...
 ```
+
+Omit any section that has no entries.
 
 ## Resumability
 

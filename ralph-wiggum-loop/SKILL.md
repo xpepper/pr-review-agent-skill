@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI. Works with any agent that accepts piped instructions (claude -p, codex exec, etc.). PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.0.0"
+  version: "1.1.0"
 allowed-tools: Bash(gh:*)
 ---
 

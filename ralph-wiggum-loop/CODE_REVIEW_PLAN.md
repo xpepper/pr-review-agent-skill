@@ -62,6 +62,7 @@ Check whether `PR_COMMENTS_PLAN.md` exists in the current directory.
    - **SHOULD_FIX** — non-blocking improvement worth addressing in this PR
    - **PARK** — valid concern but out of scope; will open a follow-up issue
    - **OUT_OF_SCOPE** — does not apply to this code; reply with reasoning
+   - **NEEDS_CLARIFICATION** — intent is genuinely ambiguous; will ask a focused question instead of guessing
 
 4. Write `PR_COMMENTS_PLAN.md` (see format at the bottom of this file).
 
@@ -75,6 +76,7 @@ Check whether `PR_COMMENTS_PLAN.md` exists in the current directory.
 1. Read `PR_COMMENTS_PLAN.md`. Find the topmost unresolved item:
    - First: any MUST_FIX with `[ ]`
    - Then: any SHOULD_FIX with `[ ]`
+   - Then: any NEEDS_CLARIFICATION with `[ ]`
    - If none remain → write the file `PR_REVIEW_DONE` and print:
      `"All comments addressed. Stopping loop."` then stop.
 
@@ -152,6 +154,28 @@ Check whether `PR_COMMENTS_PLAN.md` exists in the current directory.
 
 ---
 
+## NEEDS_CLARIFICATION handling
+
+1. Post one focused question as a reply to the comment. Do not implement anything.
+   ```bash
+   cat > /tmp/pr-review-reply-<comment-id>.md <<'EOF'
+   Thanks for the feedback! Before I make a change, I want to make sure I understand what you're after:
+
+   <one specific, focused question>
+   EOF
+
+   jq -n --rawfile body /tmp/pr-review-reply-<comment-id>.md '{body:$body}' \
+     > /tmp/pr-review-reply-<comment-id>.json
+
+   gh api repos/{owner}/{repo}/pulls/{pull_number}/comments/<comment-id>/replies \
+     --input /tmp/pr-review-reply-<comment-id>.json
+   ```
+   Ask exactly **one** question. Do not resolve the thread.
+2. In `PR_COMMENTS_PLAN.md`, mark the item as `[asked: <brief question summary>]`.
+3. **Stop.**
+
+---
+
 ## PR_COMMENTS_PLAN.md format
 
 ```markdown
@@ -172,6 +196,10 @@ Fetched: <date>
 
 ## OUT_OF_SCOPE
 - [rejected: unrelated to this PR] <comment-id> — <description>
+
+## NEEDS_CLARIFICATION
+- [ ] <comment-id> — <description>
+- [asked: which approach did you prefer?] <comment-id> — <description>
 ```
 
 Keep the list ordered: topmost items are addressed first.
