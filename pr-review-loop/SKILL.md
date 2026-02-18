@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI or any other tool to interact with GitHub. PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.0.0"
+  version: "1.1.0"
 allowed-tools: Bash(gh:*)
 ---
 
@@ -65,8 +65,7 @@ gh api repos/$(gh repo view --json owner,name | jq -r '.owner.login')/$(gh repo 
 Filter to only unresolved comments.
 
 ### Step 4 — Triage
-
-Read `references/triage-guide.md`.
+Read [the triage guide](references/triage-guide.md) for the specific classification framework and examples. If the guide is not available, use the MUST_FIX / SHOULD_FIX / PARK / OUT_OF_SCOPE classification with your own judgment (see definitions below).
 
 Classify every unresolved comment as: MUST_FIX, SHOULD_FIX, PARK, or OUT_OF_SCOPE.
 
@@ -79,7 +78,9 @@ If Perplexity or other research tools are available and a comment requires exter
 Process in order: all MUST_FIX first, then SHOULD_FIX.
 Skip PARK and OUT_OF_SCOPE for now (they are handled in the summary).
 
-For each comment:
+**Cascading comments:** When multiple comments form a cascade (e.g., changing a trait signature requires updating all impls, callers, and tests), group them into a single commit referencing all comment IDs. Implement the full cascade atomically — applying any single comment without the others would leave the code in an inconsistent state.
+
+For each comment (or group of cascading comments):
 
 **5a. Assess complexity**
 
@@ -100,6 +101,7 @@ If they fail, stop and report.
 **5c. Fix or park**
 
 - Fix: implement the change
+- Fix with adaptation: if the reviewer's suggestion is directionally right but the exact code won't compile or is otherwise infeasible, implement the closest working alternative. Document the constraint in your reply (Step 5f) so the reviewer understands why the implementation differs from their suggestion.
 - Park (if you discover mid-fix that it should be parked): write reasoning, revert any partial changes, no commit
 
 **5d. Run safeguards again**
