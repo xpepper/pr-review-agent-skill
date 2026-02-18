@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI or any other tool to interact with GitHub. PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.1.0"
+  version: "1.2.0"
 allowed-tools: Bash(gh:*)
 ---
 
@@ -52,17 +52,39 @@ gh pr status
 gh pr view
 ```
 
-### Step 3 — Collect Unresolved PR Comments
+### Step 3 — Collect Unresolved PR Comments (Source of Truth: reviewThreads)
 
 ```bash
-# Get review comments (comments on specific lines of code)
-gh api repos/{owner}/{repo}/pulls/{pr_number}/comments | jq '.[] | {id: .id, user: .user.login, author: .author.login, body: .body, created_at: .created_at, in_reply_to_id: .in_reply_to_id}'
-
-# For current repo, use variables:
-gh api repos/$(gh repo view --json owner,name | jq -r '.owner.login')/$(gh repo view --json owner,name | jq -r '.name')/pulls/$(gh pr view --json number | jq -r '.number')/comments | jq '.[] | {id: .id, user: .user.login, author: .author.login, body: .body, created_at: .created_at, in_reply_to_id: .in_reply_to_id}'
+# Fetch review threads and keep only unresolved ones.
+gh api graphql -f query='
+query($owner:String!, $name:String!, $number:Int!) {
+  repository(owner:$owner, name:$name) {
+    pullRequest(number:$number) {
+      reviewThreads(first:100) {
+        nodes {
+          id
+          isResolved
+          path
+          line
+          comments(first:20) {
+            nodes {
+              id
+              databaseId
+              author { login }
+              body
+              createdAt
+              replyTo { databaseId }
+            }
+          }
+        }
+      }
+    }
+  }
+}' -f owner='{owner}' -f name='{repo}' -F number={pr_number} \
+  | jq '.data.repository.pullRequest.reviewThreads.nodes | map(select(.isResolved == false))'
 ```
 
-Filter to only unresolved comments.
+Use unresolved `reviewThreads` as the canonical list for processing. Do not drive the workflow from `/pulls/{pr}/comments` alone.
 
 ### Step 4 — Triage
 Read [the triage guide](references/triage-guide.md) for the specific classification framework and examples. If the guide is not available, use the MUST_FIX / SHOULD_FIX / PARK / OUT_OF_SCOPE classification with your own judgment (see definitions below).
@@ -70,6 +92,8 @@ Read [the triage guide](references/triage-guide.md) for the specific classificat
 Classify every unresolved comment as: MUST_FIX, SHOULD_FIX, PARK, or OUT_OF_SCOPE.
 
 Triage all comments before acting on any.
+
+If a comment is non-actionable/no-op (e.g. acknowledgment, praise, emoji-only), classify as OUT_OF_SCOPE and reply with a short acknowledgment before resolving.
 
 If Perplexity or other research tools are available and a comment requires external knowledge to classify (e.g., library idioms, language conventions), use them to inform your decision.
 
@@ -145,8 +169,22 @@ Post a reply on the PR comment explaining:
 
 Preferred (gh CLI):
 ```bash
+# Avoid inline backticks/shell interpolation issues by writing body to a file.
+cat > /tmp/pr-review-reply-{comment_id}.md <<'EOF'
+<reply text>
+EOF
+
+jq -n --rawfile body /tmp/pr-review-reply-{comment_id}.md '{body:$body}' > /tmp/pr-review-reply-{comment_id}.json
+
 gh api repos/{owner}/{repo}/pulls/{pull_number}/comments/{comment_id}/replies \
-  -f body="<reply text>"
+  --input /tmp/pr-review-reply-{comment_id}.json
+```
+
+**5f.1 Verify reply body**
+
+Immediately verify what was posted (to catch shell mangling):
+```bash
+gh api repos/{owner}/{repo}/pulls/comments/{new_reply_comment_id} | jq '{id, body, html_url}'
 ```
 
 **5g. Resolve the comment**
@@ -177,6 +215,19 @@ gh api graphql -f query='
 mutation {
   resolveReviewThread(input: {threadId: "{thread_id}"}) {
     thread { id isResolved }
+  }
+}'
+```
+
+Verify resolution:
+```bash
+gh api graphql -f query='
+query {
+  node(id: "{thread_id}") {
+    ... on PullRequestReviewThread {
+      id
+      isResolved
+    }
   }
 }'
 ```
@@ -229,15 +280,30 @@ Post a final comment on the PR summarising:
 - ...
 ```
 
+Use a body file to avoid shell interpolation:
+```bash
+cat > /tmp/pr-review-summary.md <<'EOF'
+<summary text>
+EOF
+
+gh pr comment {pr_number} --body-file /tmp/pr-review-summary.md
+```
+
+Then verify the posted summary body:
+```bash
+gh pr view {pr_number} --comments
+```
+
 ## Resumability
 
 This skill is designed to be interrupted and restarted in a fresh context at any point.
 
 On startup:
 1. Run pre-flight (Step 1)
-2. Re-fetch unresolved comments from GitHub (Step 2) — already-resolved comments won't appear
+2. Re-fetch unresolved comments from GitHub (Step 3) — already-resolved comments won't appear
 3. Check for an existing `.pr-review/plan-*.md` file — if found, you are mid-fix on that comment; continue from Step 4b
-4. Triage remaining comments and continue
+4. If the previous run was interrupted, verify the latest issue/comment bodies and thread states before continuing (to catch partially posted or malformed remote writes)
+5. Triage remaining comments and continue
 
 This means no progress is ever lost. Each fix is committed and pushed before moving on.
 
