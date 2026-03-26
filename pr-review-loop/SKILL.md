@@ -198,15 +198,17 @@ EOF
 
 jq -n --rawfile body /tmp/pr-review-reply-{comment_id}.md '{body:$body}' > /tmp/pr-review-reply-{comment_id}.json
 
+# POST the reply and capture the response — do NOT run this twice
 gh api repos/{owner}/{repo}/pulls/{pull_number}/comments/{comment_id}/replies \
-  --input /tmp/pr-review-reply-{comment_id}.json
+  --input /tmp/pr-review-reply-{comment_id}.json > /tmp/pr-review-reply-{comment_id}-response.json
 ```
 
 **5f.1 Verify reply body**
 
-Immediately verify what was posted (to catch shell mangling):
+Immediately verify what was posted using a **GET** with the ID from the POST response (never re-run the POST to verify — that creates a duplicate):
 ```bash
-gh api repos/{owner}/{repo}/pulls/comments/{new_reply_comment_id} | jq '{id, body, html_url}'
+NEW_REPLY_ID=$(jq '.id' /tmp/pr-review-reply-{comment_id}-response.json)
+gh api repos/{owner}/{repo}/pulls/comments/$NEW_REPLY_ID | jq '{id, body, html_url}'
 ```
 
 **5g. Resolve the comment**
