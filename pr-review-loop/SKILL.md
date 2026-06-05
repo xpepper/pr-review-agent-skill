@@ -370,7 +370,7 @@ This skill is designed to be interrupted and restarted in a fresh context at any
 
 On startup:
 1. Run pre-flight (Step 1)
-2. Re-fetch both review threads and issue comments from GitHub (Step 3) — already-resolved threads won't appear; for issue comments, check the PR conversation to see which ones already have a reply from the agent
+2. Re-fetch both review threads and issue comments from GitHub (Step 3) — already-resolved threads won't appear; for issue comments, look for a comment posted *after* the original whose body quotes the original or follows the reply template. This is best-effort and inherently less reliable than the auto-filtered `isResolved` mechanism — if uncertain, re-reading the reply is safer than skipping it
 3. Check for an existing `.pr-review/plan-*.md` file — if found, you are mid-fix on that comment; continue from Step 4b
 4. If the previous run was interrupted, verify the latest issue/comment bodies and thread states before continuing (to catch partially posted or malformed remote writes)
 5. Triage remaining comments and continue
