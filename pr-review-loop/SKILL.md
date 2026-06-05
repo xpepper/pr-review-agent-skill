@@ -223,8 +223,10 @@ cat > /tmp/pr-review-reply-{comment_id}.md <<'EOF'
 <reply text — quote or reference the original comment so context is clear>
 EOF
 
-gh pr comment {pr_number} --body-file /tmp/pr-review-reply-{comment_id}.md \
-  > /tmp/pr-review-reply-{comment_id}-response.json
+jq -n --rawfile body /tmp/pr-review-reply-{comment_id}.md '{body:$body}' > /tmp/pr-review-reply-{comment_id}.json
+
+gh api repos/{owner}/{repo}/issues/{pr_number}/comments \
+  --input /tmp/pr-review-reply-{comment_id}.json > /tmp/pr-review-reply-{comment_id}-response.json
 ```
 
 **5f.1 Verify reply body**
