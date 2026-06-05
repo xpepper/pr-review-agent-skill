@@ -231,6 +231,8 @@ gh api repos/{owner}/{repo}/issues/{pr_number}/comments \
   --input /tmp/pr-review-reply-{comment_id}.json > /tmp/pr-review-reply-{comment_id}-response.json
 ```
 
+> Note: this creates a new top-level comment in the PR conversation. It is not threaded under the original — quoting the relevant excerpt is how context is preserved.
+
 **5f.1 Verify reply body**
 
 Immediately verify what was posted using a **GET** with the ID from the POST response (never re-run the POST to verify — that creates a duplicate):
