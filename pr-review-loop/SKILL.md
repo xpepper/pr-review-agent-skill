@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI or any other tool to interact with GitHub. PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.3.0"
+  version: "1.4.0"
 allowed-tools: Bash(gh:*)
 ---
 
@@ -52,10 +52,17 @@ gh pr status
 gh pr view
 ```
 
-### Step 3 — Collect Unresolved PR Comments (Source of Truth: reviewThreads)
+### Step 3 — Collect All Unresolved PR Feedback
 
+GitHub surfaces reviewer feedback in two distinct forms — both must be collected:
+
+| Type | Where it lives | Has "resolve"? |
+|------|---------------|----------------|
+| **Review threads** | Inline comments anchored to a file/line, submitted as part of a review | Yes — `resolveReviewThread` mutation |
+| **Issue comments** | Regular PR conversation comments (e.g. a summary review posted as a top-level comment) | No — reply serves as closure |
+
+**Fetch review threads** (keep only unresolved ones):
 ```bash
-# Fetch review threads and keep only unresolved ones.
 gh api graphql -f query='
 query($owner:String!, $name:String!, $number:Int!) {
   repository(owner:$owner, name:$name) {
@@ -84,7 +91,13 @@ query($owner:String!, $name:String!, $number:Int!) {
   | jq '.data.repository.pullRequest.reviewThreads.nodes | map(select(.isResolved == false))'
 ```
 
-Use unresolved `reviewThreads` as the canonical list for processing. Do not drive the workflow from `/pulls/{pr}/comments` alone.
+**Fetch issue comments** (top-level PR conversation comments):
+```bash
+gh api repos/{owner}/{repo}/issues/{pr_number}/comments \
+  | jq '[.[] | {id: .id, author: .user.login, body: .body, created_at: .created_at, type: "issue-comment"}]'
+```
+
+Triage items from both lists. Track which type each item is — it affects how you reply (Step 5f) and close (Step 5g).
 
 ### Step 4 — Triage
 Read [the triage guide](references/triage-guide.md) for the specific classification framework and examples. If the guide is not available, use the MUST_FIX / SHOULD_FIX / PARK / OUT_OF_SCOPE / NEEDS_CLARIFICATION classification with your own judgment (see definitions below).
@@ -184,14 +197,15 @@ git push
 
 **5f. Reply to the PR comment**
 
-Post a reply on the PR comment explaining:
+Post a reply explaining:
 - What was done (for fixes: reference the commit)
 - Why it was parked (for deferred items)
 - Why it was rejected (for out-of-scope items)
 
-Preferred (gh CLI):
+The reply mechanism differs by comment type:
+
+**For review thread comments** (inline, anchored to a file/line):
 ```bash
-# Avoid inline backticks/shell interpolation issues by writing body to a file.
 cat > /tmp/pr-review-reply-{comment_id}.md <<'EOF'
 <reply text>
 EOF
@@ -203,17 +217,35 @@ gh api repos/{owner}/{repo}/pulls/{pull_number}/comments/{comment_id}/replies \
   --input /tmp/pr-review-reply-{comment_id}.json > /tmp/pr-review-reply-{comment_id}-response.json
 ```
 
+**For issue comments** (top-level PR conversation comments):
+```bash
+cat > /tmp/pr-review-reply-{comment_id}.md <<'EOF'
+<reply text — quote or reference the original comment so context is clear>
+EOF
+
+gh pr comment {pr_number} --body-file /tmp/pr-review-reply-{comment_id}.md \
+  > /tmp/pr-review-reply-{comment_id}-response.json
+```
+
 **5f.1 Verify reply body**
 
 Immediately verify what was posted using a **GET** with the ID from the POST response (never re-run the POST to verify — that creates a duplicate):
+
+For review thread replies:
 ```bash
 NEW_REPLY_ID=$(jq '.id' /tmp/pr-review-reply-{comment_id}-response.json)
 gh api repos/{owner}/{repo}/pulls/comments/$NEW_REPLY_ID | jq '{id, body, html_url}'
 ```
 
+For issue comment replies:
+```bash
+NEW_COMMENT_ID=$(jq '.id' /tmp/pr-review-reply-{comment_id}-response.json)
+gh api repos/{owner}/{repo}/issues/comments/$NEW_COMMENT_ID | jq '{id, body, html_url}'
+```
+
 **5g. Resolve the comment**
 
-Mark the comment as resolved on GitHub.
+**For review thread comments** — mark as resolved on GitHub.
 
 First, find the thread ID for the comment:
 ```bash
@@ -255,6 +287,8 @@ query {
   }
 }'
 ```
+
+**For issue comments** — there is no "resolve" mechanism. The reply posted in Step 5f is the closure signal. Note it in the Step 7 summary.
 
 **5h. Delete plan file**
 
@@ -330,7 +364,7 @@ This skill is designed to be interrupted and restarted in a fresh context at any
 
 On startup:
 1. Run pre-flight (Step 1)
-2. Re-fetch unresolved comments from GitHub (Step 3) — already-resolved comments won't appear
+2. Re-fetch both review threads and issue comments from GitHub (Step 3) — already-resolved threads won't appear; for issue comments, check the PR conversation to see which ones already have a reply from the agent
 3. Check for an existing `.pr-review/plan-*.md` file — if found, you are mid-fix on that comment; continue from Step 4b
 4. If the previous run was interrupted, verify the latest issue/comment bodies and thread states before continuing (to catch partially posted or malformed remote writes)
 5. Triage remaining comments and continue
