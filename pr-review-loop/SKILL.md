@@ -97,6 +97,8 @@ gh api repos/{owner}/{repo}/issues/{pr_number}/comments \
   | jq '[.[] | {id: .id, author: .user.login, body: .body, created_at: .created_at, type: "issue-comment"}]'
 ```
 
+> Before triaging, filter out comments by the PR author (they are not reviewer feedback) and known bot accounts. The `author` field in the transformed output helps with this.
+
 Triage items from both lists. Track which type each item is — it affects how you reply (Step 5f) and close (Step 5g).
 
 ### Step 4 — Triage
