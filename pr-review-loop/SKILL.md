@@ -88,7 +88,7 @@ query($owner:String!, $name:String!, $number:Int!) {
     }
   }
 }' -f owner='{owner}' -f name='{repo}' -F number={pr_number} \
-  | jq '.data.repository.pullRequest.reviewThreads.nodes | map(select(.isResolved == false))'
+  | jq '.data.repository.pullRequest.reviewThreads.nodes | map(select(.isResolved == false)) | map(. + {type: "review-thread"})'
 ```
 
 **Fetch issue comments** (top-level PR conversation comments):
