@@ -346,11 +346,14 @@ query {
 
 ### Step 8 — Check for PR body drift
 
-Before posting the summary, check whether the commits made during this run have drifted the PR's scope away from what its body claims.
+Before posting the summary, check whether the PR's commits have drifted its scope away from what the body claims. Compare against the PR's base branch rather than this run's starting point — the body should describe the whole PR, and the base branch is recoverable on a fresh-context resume.
 
 ```bash
-# The commits made during this run
-git log <base-before-run>..HEAD --oneline
+# The PR's base branch (e.g. main)
+base=$(gh pr view {pr_number} --json baseRefName --jq '.baseRefName')
+
+# All commits the PR adds on top of its base
+git log "origin/$base..HEAD" --oneline
 
 # The current PR body
 gh pr view {pr_number} --json body --jq '.body'
