@@ -108,7 +108,7 @@ Classify every unresolved comment as: MUST_FIX, SHOULD_FIX, PARK, OUT_OF_SCOPE, 
 
 Triage all comments before acting on any.
 
-If a comment is non-actionable/no-op (e.g. acknowledgment, praise, emoji-only), classify as OUT_OF_SCOPE and reply with a short acknowledgment before resolving.
+If a comment is non-actionable/no-op (e.g. acknowledgment, praise, emoji-only), classify as OUT_OF_SCOPE. Its short acknowledgment reply and resolution happen during processing (Step 6), after the triage is approved — not now.
 
 If a comment's intent is genuinely ambiguous — multiple interpretations exist and each would lead to a meaningfully different change — classify as NEEDS_CLARIFICATION rather than guessing.
 
@@ -137,7 +137,8 @@ Only after explicit approval, move on to Step 6.
 ### Step 6 — Process ONE comment at a time
 
 Process in order: all MUST_FIX first, then SHOULD_FIX.
-Skip PARK and OUT_OF_SCOPE for now (they are handled in the summary).
+
+For OUT_OF_SCOPE **no-op** comments (acknowledgment, praise, emoji-only): post a short acknowledgment reply and resolve the thread (Steps 6f–6g), then move on. Skip PARK and genuine OUT_OF_SCOPE suggestions for now — they are deferred and reported in the summary.
 
 **NEEDS_CLARIFICATION comments:** post one focused question as a reply to the thread (see format below), do **not** resolve the thread, and move on to the next comment. Do not implement anything.
 
@@ -323,7 +324,7 @@ If a plan file was created, delete it:
 rm .pr-review/plan-<comment-id>.md
 ```
 
-### Step 7 — Stop condition
+### Step 7 — Stop condition for the processing loop
 
 Stop when no MUST_FIX or SHOULD_FIX comments remain.
 
