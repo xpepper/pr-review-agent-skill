@@ -7,9 +7,11 @@ with an opinionated, resumable workflow.
 
 1. Discovers project safeguards (tests, linting, compilation) from project conventions
 2. Collects all unresolved PR comments from any reviewer
-3. Triages each comment: MUST_FIX, SHOULD_FIX, PARK, or OUT_OF_SCOPE
-4. Addresses comments one at a time: test → fix → test → commit → reply → resolve
-5. Posts a final PR summary when done
+3. Triages each comment: MUST_FIX, SHOULD_FIX, PARK, OUT_OF_SCOPE, or NEEDS_CLARIFICATION
+4. Presents the triage and waits for your go-ahead before changing anything
+5. Addresses comments one at a time: test → fix → test → commit → reply → resolve
+6. Updates the PR body if the new commits drifted its scope
+7. Posts a final PR summary when done
 
 ## Key property: resumable
 
