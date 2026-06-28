@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI or any other tool to interact with GitHub. PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.4.0"
+  version: "1.5.0"
 allowed-tools: Bash(gh:*)
 ---
 
@@ -99,7 +99,7 @@ gh api repos/{owner}/{repo}/issues/{pr_number}/comments \
 
 > Before triaging, filter out comments by the PR author (they are not reviewer feedback) and known bot accounts. The `author` field in the transformed output helps with this.
 
-Triage items from both lists. Track which type each item is — it affects how you reply (Step 5f) and close (Step 5g).
+Triage items from both lists. Track which type each item is — it affects how you reply (Step 6f) and close (Step 6g).
 
 ### Step 4 — Triage
 Read [the triage guide](references/triage-guide.md) for the specific classification framework and examples. If the guide is not available, use the MUST_FIX / SHOULD_FIX / PARK / OUT_OF_SCOPE / NEEDS_CLARIFICATION classification with your own judgment (see definitions below).
@@ -114,7 +114,27 @@ If a comment's intent is genuinely ambiguous — multiple interpretations exist 
 
 If Perplexity or other research tools are available and a comment requires external knowledge to classify (e.g., library idioms, language conventions), use them to inform your decision.
 
-### Step 5 — Process ONE comment at a time
+### Step 5 — Present triage and wait for go-ahead
+
+**Stop here. Do not start processing until the user approves the triage.**
+
+After classifying every comment, present the full triage to the user and wait for their go-ahead. Until the user responds, do **not** touch code, create plan files, post replies, or resolve anything.
+
+Present a compact table, one row per unresolved comment:
+
+| Ref | Class | Rationale |
+|-----|-------|-----------|
+| @author `file:line` (review thread) or short excerpt (issue comment) | MUST_FIX / SHOULD_FIX / PARK / OUT_OF_SCOPE / NEEDS_CLARIFICATION | one line, grounded in the codebase conventions / agent guidelines found in Step 1 |
+
+The rationale is where feedback is challenged rather than blindly accepted: show each comment as accepted, adapted, or pushed back on, with a reason tied to the project's conventions. The shared goal is the highest-quality merge — hold the feedback in high regard, but do not implement a suggestion that conflicts with the project's established conventions without saying so here.
+
+The user may:
+- **Approve as-is** ("go ahead", "looks good") — proceed to Step 6.
+- **Adjust classifications** ("treat #3 as PARK", "#5 is OUT_OF_SCOPE — convention is X"). Apply the overrides. If the changes are substantial, re-present the updated triage; otherwise proceed.
+
+Only after explicit approval, move on to Step 6.
+
+### Step 6 — Process ONE comment at a time
 
 Process in order: all MUST_FIX first, then SHOULD_FIX.
 Skip PARK and OUT_OF_SCOPE for now (they are handled in the summary).
@@ -125,7 +145,7 @@ Skip PARK and OUT_OF_SCOPE for now (they are handled in the summary).
 
 For each comment (or group of cascading comments):
 
-**5a. Assess complexity**
+**6a. Assess complexity**
 
 Is this trivial (e.g., rename a function, fix a typo, adjust formatting)?
 - Yes → fix directly, no plan needed
@@ -136,15 +156,15 @@ The plan file must describe:
 - The approach to fix it
 - Files that will be changed
 
-**5b. Run safeguards**
+**6b. Run safeguards**
 
 Run all safeguards identified in Step 1. They must all pass before you touch any code.
 If they fail, stop and report.
 
-**5c. Fix, park, or ask for clarification**
+**6c. Fix, park, or ask for clarification**
 
 - Fix: implement the change
-- Fix with adaptation: if the reviewer's suggestion is directionally right but the exact code won't compile or is otherwise infeasible, implement the closest working alternative. Document the constraint in your reply (Step 5f) so the reviewer understands why the implementation differs from their suggestion.
+- Fix with adaptation: if the reviewer's suggestion is directionally right but the exact code won't compile or is otherwise infeasible, implement the closest working alternative. Document the constraint in your reply (Step 6f) so the reviewer understands why the implementation differs from their suggestion.
 - Park (if you discover mid-fix that it should be parked): write reasoning, revert any partial changes, no commit
 - Ask for clarification (if you discover mid-assessment that the intent is genuinely ambiguous): post one focused question to the thread (see below), do not resolve, no commit, move on
 
@@ -165,12 +185,12 @@ gh api repos/{owner}/{repo}/pulls/{pull_number}/comments/{comment_id}/replies \
 
 Ask exactly **one** question. Do not list alternatives unless directly needed to frame the question. Leave the thread unresolved so the reviewer's answer re-surfaces it.
 
-**5d. Run safeguards again**
+**6d. Run safeguards again**
 
 Run all safeguards. They must all pass.
 If they fail, fix the regression before moving on — do not skip this step.
 
-**5e. Commit and push**
+**6e. Commit and push**
 
 Each comment gets its own focused commit. Reference the comment author in the message body.
 
@@ -197,7 +217,7 @@ Addresses PR comment from @reviewer - improves type safety."
 git push
 ```
 
-**5f. Reply to the PR comment**
+**6f. Reply to the PR comment**
 
 Post a reply explaining:
 - What was done (for fixes: reference the commit)
@@ -233,7 +253,7 @@ gh api repos/{owner}/{repo}/issues/{pr_number}/comments \
 
 > Note: this creates a new top-level comment in the PR conversation. It is not threaded under the original — quoting the relevant excerpt is how context is preserved.
 
-**5f.1 Verify reply body**
+**6f.1 Verify reply body**
 
 Immediately verify what was posted using a **GET** with the ID from the POST response (never re-run the POST to verify — that creates a duplicate):
 
@@ -249,7 +269,7 @@ NEW_COMMENT_ID=$(jq '.id' /tmp/pr-review-reply-{comment_id}-response.json)
 gh api repos/{owner}/{repo}/issues/comments/$NEW_COMMENT_ID | jq '{id, body, html_url}'
 ```
 
-**5g. Resolve the comment**
+**6g. Resolve the comment**
 
 **For review thread comments** — mark as resolved on GitHub.
 
@@ -294,16 +314,16 @@ query {
 }'
 ```
 
-**For issue comments** — there is no "resolve" mechanism. The reply posted in Step 5f is the closure signal. Note it in the Step 7 summary.
+**For issue comments** — there is no "resolve" mechanism. The reply posted in Step 6f is the closure signal. Note it in the Step 9 summary.
 
-**5h. Delete plan file**
+**6h. Delete plan file**
 
 If a plan file was created, delete it:
 ```bash
 rm .pr-review/plan-<comment-id>.md
 ```
 
-### Step 6 — Stop condition
+### Step 7 — Stop condition
 
 Stop when no MUST_FIX or SHOULD_FIX comments remain.
 
@@ -324,7 +344,35 @@ query {
   done
 ```
 
-### Step 7 — Summary
+### Step 8 — Check for PR body drift
+
+Before posting the summary, check whether the commits made during this run have drifted the PR's scope away from what its body claims.
+
+```bash
+# The commits made during this run
+git log <base-before-run>..HEAD --oneline
+
+# The current PR body
+gh pr view {pr_number} --json body --jq '.body'
+```
+
+**Drift** = the body would now mislead a reader about what the PR contains: added or removed behaviour, a changed approach, or scope the body does not mention.
+
+**Not drift** = pure bug-fix tweaks that do not change the PR's stated intent. Do not churn the body needlessly.
+
+If drift is detected, update the PR body, preserving the parts that are still accurate:
+
+```bash
+cat > /tmp/pr-body.md <<'EOF'
+<updated PR body>
+EOF
+
+gh pr edit {pr_number} --body-file /tmp/pr-body.md
+```
+
+Record the update in the Step 9 summary (an "Updated PR body to reflect …" line). This was already sanctioned by the triage approval in Step 5 and is surfaced in the summary, so no separate confirmation is needed.
+
+### Step 9 — Summary
 
 Post a final comment on the PR summarising:
 
@@ -346,6 +394,9 @@ Post a final comment on the PR summarising:
 ### Awaiting Clarification
 - Asked @alice: "Did you mean to rename this everywhere, or just at the call site?" — thread left open
 - ...
+
+### PR Body
+- Updated PR body to reflect <what changed> (or omit this section if no drift)
 ```
 
 Omit any section that has no entries.
@@ -371,9 +422,11 @@ This skill is designed to be interrupted and restarted in a fresh context at any
 On startup:
 1. Run pre-flight (Step 1)
 2. Re-fetch both review threads and issue comments from GitHub (Step 3) — already-resolved threads won't appear; for issue comments, look for a comment posted *after* the original whose body quotes the original or follows the reply template. This is best-effort and inherently less reliable than the auto-filtered `isResolved` mechanism — if uncertain, re-reading the reply is safer than skipping it
-3. Check for an existing `.pr-review/plan-*.md` file — if found, you are mid-fix on that comment; continue from Step 4b
+3. Check for an existing `.pr-review/plan-*.md` file — if found, you are mid-fix on that comment; continue from Step 6b
 4. If the previous run was interrupted, verify the latest issue/comment bodies and thread states before continuing (to catch partially posted or malformed remote writes)
 5. Triage remaining comments and continue
+
+The triage approval gate (Step 5) is conversational state and is not persisted. On a fresh-context resume the gate is presented again before processing — re-prompting is safe because every fix is committed and pushed before moving on, so no work is lost.
 
 This means no progress is ever lost. Each fix is committed and pushed before moving on.
 
@@ -384,6 +437,7 @@ This means no progress is ever lost. Each fix is committed and pushed before mov
 
 ## Do Not
 
+- Start processing comments before the user has approved the triage (Step 5)
 - Bundle all PR feedback into one large commit
 - Make multiple unrelated changes in a single commit
 - Push all changes at once without intermediate commits
