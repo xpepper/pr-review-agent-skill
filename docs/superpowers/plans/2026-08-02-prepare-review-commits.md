@@ -133,12 +133,14 @@ detect that it drifted.
 *outside the repository* (`mktemp -d` in the OS temp directory) — a state
 directory inside the worktree pollutes the very `git add -A` snapshot it is
 meant to describe. Capture both the index and the full worktree as Git tree
-objects, and anchor them to a ref so nothing can garbage-collect them and a
-human can recover manually if the agent dies mid-transaction:
+objects, and anchor **each** to its own per-run ref so nothing can
+garbage-collect them and a human can recover manually if the agent dies
+mid-transaction:
 
 ```bash
 root="$(git rev-parse --show-toplevel)"
-state_dir="$(mktemp -d "${TMPDIR:-/tmp}/prepare-review-commits.XXXXXX")"
+run_id="$(date -u +%Y%m%dT%H%M%SZ)-$$"
+state_dir="$(mktemp -d "${TMPDIR:-/tmp}/prepare-review-commits.$run_id.XXXXXX")"
 start_head="$(git rev-parse HEAD)"
 git status --porcelain=v1 -uall > "$state_dir/status.before"
 git ls-files --others --exclude-standard -z > "$state_dir/untracked.before"
@@ -147,15 +149,25 @@ rm -f "$state_dir/fp.index"
 GIT_INDEX_FILE="$state_dir/fp.index" git -C "$root" read-tree HEAD
 GIT_INDEX_FILE="$state_dir/fp.index" git -C "$root" add -A -- .
 worktree_tree="$(GIT_INDEX_FILE="$state_dir/fp.index" git write-tree)"
-backup_commit="$(git commit-tree "$worktree_tree" -p "$start_head" \
-  -m "prepare-review-commits backup of $start_head")"
-git update-ref refs/prepare-review-commits/backup "$backup_commit"
+zero=0000000000000000000000000000000000000000
+worktree_ref="refs/prepare-review-commits/$run_id/worktree"
+index_ref="refs/prepare-review-commits/$run_id/index"
+worktree_commit="$(git commit-tree "$worktree_tree" -p "$start_head" \
+  -m "prepare-review-commits worktree backup of $start_head")"
+index_commit="$(git commit-tree "$index_tree" -p "$start_head" \
+  -m "prepare-review-commits index backup of $start_head")"
+git update-ref "$worktree_ref" "$worktree_commit" "$zero"
+git update-ref "$index_ref" "$index_commit" "$zero"
 ```
 
 Seeding the fingerprint index from `HEAD` before `git add -A` keeps
-tracked-but-ignored files in the snapshot. Require the agent to disclose the
-backup ref and state directory before the first change, and to delete both
-only after success or after verified recovery.
+tracked-but-ignored files in the snapshot. The zero old-value argument makes
+each `update-ref` a create-only operation, so a stale ref left behind by a
+crashed earlier run is never overwritten; on collision the agent must pick a
+fresh `run_id` or abort, never force or delete another run's ref. Require the
+agent to disclose both backup refs and the state directory before the first
+change, to delete only its own refs and state directory, and to do so only
+after success or after verified recovery.
 
 **Non-interactive staging.** Reset once so the index matches `HEAD`; from then
 on `git diff -- <path>` is the whole remaining `HEAD`-to-worktree diff.
@@ -186,25 +198,33 @@ backup-protected recovery operation authorised here and nowhere else:
 
 ```bash
 git reset --hard "$start_head"
-git clean -fd          # never -x: ignored content is left untouched
-rm -f "$state_dir/restore.index"
-GIT_INDEX_FILE="$state_dir/restore.index" git -C "$root" read-tree "$worktree_tree"
-GIT_INDEX_FILE="$state_dir/restore.index" git -C "$root" checkout-index -a -f
+git clean -fd          # never -x or -ff: ignored content is left untouched
+git read-tree --reset -u "$worktree_tree"
 git read-tree "$index_tree"
 git update-index -q --refresh || true
 ```
 
 `git clean -fd` removes transaction-created untracked content *and* the
-originals; `checkout-index` then rewrites every original tracked and untracked
-file from the backup tree, which also repairs files a hook deleted or edited.
+originals. `git read-tree --reset -u "$worktree_tree"` then forces the
+working tree to the snapshot: it rewrites drifted content **and removes paths
+the snapshot does not contain**, which is what restores in-scope deletions.
+`checkout-index` must not be used here — it only writes files present in the
+tree and never removes any, so `git reset --hard` would resurrect every
+tracked file that was deleted before the run and recovery would merely detect
+the mismatch. `git read-tree "$index_tree"` finally restores the
+staged/unstaged split without touching worktree content.
 
 **Verification.** Require four checks — `HEAD`, the index tree, a freshly
 recomputed worktree tree, and a `status --porcelain=v1 -uall` diff — to all
-pass before any success claim, and require the backup ref and state directory
-to be retained with the mismatch reported if any check fails. Require the
-skill to state its honest limits: ignored content is deliberately not
-reverted, and a pre-existing empty directory is removed by `git clean -fd`
-and not restored.
+pass before any success claim, and require both backup refs and the state
+directory to be retained with the mismatch reported if any check fails.
+Require guarded cleanup (`git update-ref -d <ref> <expected-oid>`) so no run
+can delete another run's backup, and document the manual replay path
+(`<ref>^` is the run's starting commit). Require the skill to state its honest
+limits: ignored content is deliberately not reverted; a pre-existing empty
+directory is removed by `git clean -fd` and not restored; and a Git repository
+created inside the worktree during the run cannot be cleaned safely, so the
+skill must fail loudly rather than claim exact restoration.
 
 - [x] **Step 5: Define validation and completion reporting**
 
@@ -253,8 +273,13 @@ git diff        # must show only the remaining hunk
 
 *Hostile mutation plus failure* — a discovered validation command that appends
 to a tracked file, writes a new untracked file, deletes an untracked original,
-and exits non-zero; and a `pre-commit` hook that reformats a tracked file and
-generates an untracked file. After recovery, all four checks must pass:
+recreates a file the run had deleted, and exits non-zero; and a `pre-commit`
+hook that reformats a tracked file and generates an untracked file. Build the
+starting state so it contains a staged deletion (`D `), an unstaged deletion
+(` D`), a deletion that empties a directory, a staged addition further
+modified in the worktree (`AM`), a mixed staged/unstaged edit (`MM`),
+untracked originals, and an ignored artifact. After recovery, all four checks
+must pass:
 
 ```bash
 test "$(git rev-parse HEAD)" = "$start_head"
@@ -263,9 +288,11 @@ test "$(git write-tree)" = "$index_tree"
 diff status.before <(git status --porcelain=v1 -uall)
 ```
 
-Also confirm that an ignored artifact survives recovery untouched, and that an
-unborn branch, an unresolved conflict, and an unknown base each abort before
-any mutation with `HEAD` unchanged.
+Also confirm that every deleted path is absent again after recovery, that an
+ignored artifact survives recovery untouched, that a create-only
+`git update-ref` refuses to overwrite a stale backup ref, and that an unborn
+branch, an unresolved conflict, and an unknown base each abort before any
+mutation with `HEAD` unchanged.
 
 - [x] **Step 8: Commit**
 
@@ -384,7 +411,8 @@ Expected: the output lists `prepare-review-commits` and creates
 `prepare-review-commits.skill`. Do not stage the generated package because
 `*.skill` is an ignored build artifact.
 
-- [x] **Step 3: Test project-local installation and removal**
+- [ ] **Step 3: Test project-local installation and removal** — DEFERRED, not
+  yet done
 
 Run:
 
@@ -397,10 +425,11 @@ Expected: installation exposes the `prepare-review-commits` description under
 `.agents/skills/prepare-review-commits`, and removal succeeds. Remove any
 temporary project-local installation residue if the installer leaves it behind.
 
-**Deferred:** this step is intentionally outstanding. `npx skills add` resolves
-the skill from GitHub, so it cannot run until `feat/prepare-review-commits` is
-pushed. Run it once, unchanged, immediately after the first push, and treat a
-failure there as a follow-up fix rather than a plan change.
+**Deferred:** this step is intentionally left unchecked and outstanding.
+`npx skills add` resolves the skill from GitHub, so it cannot run until
+`feat/prepare-review-commits` is pushed. Run it once, unchanged, immediately
+after the first push, tick the box only then, and treat a failure there as a
+follow-up fix rather than a plan change.
 
 - [x] **Step 4: Inspect the final change set**
 
@@ -434,7 +463,8 @@ positioning, automatic packaging, and installation verification.
 
 **Placeholder scan:** The plan names all files, commands, required report
 fields, and safety behavior. The only deferred item is Task 3 Step 3, which
-depends on the branch being pushed to GitHub.
+depends on the branch being pushed to GitHub and therefore stays unchecked
+until that push happens.
 
 **Consistency check:** The README and catalog both name
 `prepare-review-commits`; the package command matches the directory; all

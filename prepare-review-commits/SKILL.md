@@ -91,7 +91,8 @@ directory) so no recovery step can reach it and it never appears in
 
 ```bash
 root="$(git rev-parse --show-toplevel)"
-state_dir="$(mktemp -d "${TMPDIR:-/tmp}/prepare-review-commits.XXXXXX")"
+run_id="$(date -u +%Y%m%dT%H%M%SZ)-$$"
+state_dir="$(mktemp -d "${TMPDIR:-/tmp}/prepare-review-commits.$run_id.XXXXXX")"
 
 start_head="$(git rev-parse HEAD)"
 git status --porcelain=v1 -uall > "$state_dir/status.before"
@@ -107,19 +108,39 @@ GIT_INDEX_FILE="$state_dir/fp.index" git -C "$root" read-tree HEAD
 GIT_INDEX_FILE="$state_dir/fp.index" git -C "$root" add -A -- .
 worktree_tree="$(GIT_INDEX_FILE="$state_dir/fp.index" git write-tree)"
 
-# Anchor the snapshot to a ref so it cannot be garbage-collected and a human
-# can recover manually if this agent dies mid-transaction.
-backup_commit="$(git commit-tree "$worktree_tree" -p "$start_head" \
-  -m "prepare-review-commits backup of $start_head")"
-git update-ref refs/prepare-review-commits/backup "$backup_commit"
-printf 'start_head=%s\nindex_tree=%s\nworktree_tree=%s\nbackup=%s\n' \
-  "$start_head" "$index_tree" "$worktree_tree" "$backup_commit" \
+# Anchor BOTH snapshots to per-run refs so neither can be garbage-collected
+# and a human can recover manually if this agent dies mid-transaction.
+zero=0000000000000000000000000000000000000000
+worktree_ref="refs/prepare-review-commits/$run_id/worktree"
+index_ref="refs/prepare-review-commits/$run_id/index"
+worktree_commit="$(git commit-tree "$worktree_tree" -p "$start_head" \
+  -m "prepare-review-commits worktree backup of $start_head")"
+index_commit="$(git commit-tree "$index_tree" -p "$start_head" \
+  -m "prepare-review-commits index backup of $start_head")"
+# The trailing zero OID is an "old value" precondition: the update succeeds
+# only if the ref does not exist yet, so a stale ref left by a crashed run is
+# never overwritten.
+git update-ref "$worktree_ref" "$worktree_commit" "$zero"
+git update-ref "$index_ref" "$index_commit" "$zero"
+printf 'run_id=%s\nstart_head=%s\nindex_tree=%s\nworktree_tree=%s\nworktree_ref=%s\nworktree_commit=%s\nindex_ref=%s\nindex_commit=%s\n' \
+  "$run_id" "$start_head" "$index_tree" "$worktree_tree" \
+  "$worktree_ref" "$worktree_commit" "$index_ref" "$index_commit" \
   > "$state_dir/refs.before"
 ```
 
 `GIT_INDEX_FILE` keeps this snapshot out of the real index, and seeding it
-from `HEAD` first means tracked-but-ignored files are captured too. Tell the
-user the backup ref and the state directory path before the first change.
+from `HEAD` first means tracked-but-ignored files are captured too.
+
+Both backups are durable and per-run: the refs live under
+`refs/prepare-review-commits/<run_id>/`, and `mktemp -d` gives this run its
+own state directory. Nothing this run writes can clobber another run's
+backup. If either `git update-ref` fails because the ref already exists, do
+**not** delete or force it — that ref belongs to a different (possibly
+crashed) run. Pick a fresh `run_id` and retry; if it still collides, abort
+before mutating anything.
+
+Tell the user both backup refs and the state directory path before the first
+change.
 
 ### 2. Stage each planned commit non-interactively
 
@@ -175,24 +196,40 @@ the only place a destructive Git command is permitted, and only because the
 backup above is complete and lives outside the working tree.
 
 ```bash
-# a. Drop the transaction commits and reset tracked files (backup-protected).
+# a. Drop the transaction commits and move HEAD and the index back to the
+#    starting commit (backup-protected).
 git reset --hard "$start_head"
 
 # b. Delete every non-ignored untracked path, including the ones the
 #    transaction created. Step c restores the originals from the backup.
-#    `git clean -fd` (never `-x`) leaves ignored content untouched.
+#    `git clean -fd` (never `-x`, never `-ff`) leaves ignored content and
+#    nested Git repositories untouched.
 git clean -fd
 
-# c. Restore exact worktree content, including untracked files a hook,
-#    formatter, or validation command modified or deleted.
-rm -f "$state_dir/restore.index"
-GIT_INDEX_FILE="$state_dir/restore.index" git -C "$root" read-tree "$worktree_tree"
-GIT_INDEX_FILE="$state_dir/restore.index" git -C "$root" checkout-index -a -f
+# c. Force the working tree back to the snapshot. `read-tree --reset -u`
+#    both rewrites files whose content drifted AND removes files that the
+#    snapshot does not contain — which is what restores the in-scope
+#    deletions that step (a) just undid. `checkout-index` cannot do this:
+#    it only writes files present in the tree and never removes any, so a
+#    tracked file deleted before the run would silently come back.
+git read-tree --reset -u "$worktree_tree"
 
-# d. Restore the exact staged/unstaged split.
+# d. Restore the exact staged/unstaged split. This rewrites the index only;
+#    the working tree content settled in step (c) is left alone, so the
+#    files this run adopted as untracked become untracked again.
 git read-tree "$index_tree"
 git update-index -q --refresh || true
 ```
+
+Why this order matters: step (a) resurrects every tracked file that was
+deleted in the starting state, and step (b) cannot remove them because they
+are tracked again. Only step (c) — a tree-driven update that deletes as well
+as writes — brings staged deletions (`D `), unstaged deletions (` D`), and
+deletions that empty a directory back to their pre-run state.
+
+Ignored content survives all four steps: `git clean -fd` skips ignored paths,
+and `read-tree --reset -u` only touches paths that are in the old index or in
+the target tree.
 
 ### 4. Verify the recovery, then clean up
 
@@ -212,28 +249,71 @@ diff "$state_dir/status.before" "$state_dir/status.after"
 ```
 
 Only after all four pass — or after the full sequence succeeds with no
-recovery — remove the backup:
+recovery — remove this run's backup. Delete each ref with its expected old
+value so a concurrent or later run's ref can never be removed by mistake, and
+remove only this run's state directory:
 
 ```bash
-git update-ref -d refs/prepare-review-commits/backup
+git update-ref -d "$worktree_ref" "$worktree_commit"
+git update-ref -d "$index_ref" "$index_commit"
 rm -rf "$state_dir"
 ```
 
-If any check fails, stop immediately, change nothing else, keep both
-`refs/prepare-review-commits/backup` and `$state_dir`, and report the exact
-mismatch together with the manual recovery handle:
+Never delete a ref under `refs/prepare-review-commits/` that this run did not
+create, and never run a bulk cleanup of that namespace: a surviving ref means
+some run did not finish, and only its owner can say whether it is still
+needed.
+
+If any check fails, stop immediately, change nothing else, keep both backup
+refs and `$state_dir`, and report the exact mismatch together with the manual
+recovery handles. A human can list every retained backup and replay the
+recovery for one run like this:
 
 ```bash
-git checkout refs/prepare-review-commits/backup -- .
+# List retained backups from crashed or failed runs, newest last.
+git for-each-ref --sort=creatordate \
+  --format='%(refname) %(objectname:short) %(creatordate:iso)' \
+  refs/prepare-review-commits/
+
+# Replay recovery for one run. Both backup commits are parented on the run's
+# starting commit, so `<ref>^` is that commit.
+run=refs/prepare-review-commits/<run_id>
+git reset --hard "$run/worktree^"
+git clean -fd
+git read-tree --reset -u "$run/worktree^{tree}"
+git read-tree "$run/index^{tree}"
+git update-index -q --refresh || true
+
+# Then drop that run's backup.
+git update-ref -d "$run/worktree"
+git update-ref -d "$run/index"
 ```
+
+To inspect a snapshot without touching the working tree, use
+`git show --stat <run>/worktree` or
+`git checkout <run>/worktree -- <path>` for a single file — but note that
+`git checkout <ref> -- .` restores files without removing extra ones, so it
+is a partial handle, not the full recovery above.
 
 Never claim recovery succeeded without those checks passing.
 
-State these limits rather than papering over them: ignored content is
-deliberately left alone, so an ignored artifact written or changed by a hook
-or validation command is not reverted; and because Git cannot track an empty
-directory, an empty directory that existed before the run is removed by step
-(b) and not restored.
+State these limits rather than papering over them:
+
+- **Ignored content is deliberately left alone.** An ignored artifact written,
+  changed, or deleted by a hook or validation command is not reverted. This
+  does not weaken the guarantee for in-scope work: every non-ignored tracked
+  and untracked path is restored exactly, including deletions.
+- **Empty directories are not tracked by Git.** A directory that was empty
+  before the run — and any directory left empty because the run's only content
+  under it was untracked — is removed by step (b) and not recreated. No file
+  content is lost.
+- **A Git repository created inside the working tree during the run cannot be
+  cleaned safely.** `git clean -fd` will not descend into a directory holding
+  its own `.git`, and `-ff` is forbidden here because it deletes repositories
+  outright. If a hook, code generator, or validation command creates one, the
+  worktree-tree and status checks above will fail. Do not retry with `-ff` and
+  do not claim exact restoration: stop, keep both backup refs and the state
+  directory, name the leftover repository path, and let the user remove it.
 
 ## Validate Each Commit
 
@@ -259,8 +339,10 @@ The final report must include:
 - An explicit statement that nothing was pushed.
 
 If the run ended in recovery, also report whether recovery verification
-passed. If it did not, report the mismatch, the retained backup ref
-`refs/prepare-review-commits/backup`, and the retained state directory path.
+passed. If it did not, report the mismatch, the retained backup refs
+`refs/prepare-review-commits/<run_id>/worktree` and
+`refs/prepare-review-commits/<run_id>/index`, and the retained state
+directory path.
 
 ## Do Not
 
@@ -271,9 +353,11 @@ passed. If it did not, report the mismatch, the retained backup ref
 - Bypass hooks or commit signing.
 - Use interactive commands such as `git add -p`, `git rebase -i`, or anything
   that opens an editor or waits for keyboard input.
-- Force-add ignored paths, or run any `git clean` variant with `-x`.
+- Force-add ignored paths, or run any `git clean` variant with `-x` or `-ff`.
 - Run `git reset --hard`, `git clean`, or any other destructive command
   outside the documented, backup-protected recovery procedure.
+- Delete, overwrite, or bulk-clean a `refs/prepare-review-commits/` ref that
+  the current run did not create.
 - Cap the commit count at an arbitrary number.
 - Claim recovery succeeded without passing every recovery verification check.
 - Treat a clean or ignored-only working tree as a failure.
