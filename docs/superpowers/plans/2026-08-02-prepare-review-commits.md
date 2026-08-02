@@ -426,10 +426,10 @@ Expected: installation exposes the `prepare-review-commits` description under
 temporary project-local installation residue if the installer leaves it behind.
 
 **Deferred:** this step is intentionally left unchecked and outstanding.
-`npx skills add` resolves the skill from GitHub, so it cannot run until
-`feat/prepare-review-commits` is pushed. Run it once, unchanged, immediately
-after the first push, tick the box only then, and treat a failure there as a
-follow-up fix rather than a plan change.
+`npx skills add` resolves the repository's default branch, so it cannot run
+until this skill is merged into `main`. Run it once, unchanged, immediately
+after merge, tick the box only then, and treat a failure there as a follow-up
+fix rather than a plan change.
 
 - [x] **Step 4: Inspect the final change set**
 
