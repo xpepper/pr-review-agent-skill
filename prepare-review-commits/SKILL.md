@@ -6,7 +6,7 @@ compatibility: Requires Git. Optionally uses gh CLI for pull request and issue c
 metadata:
   author: Pietro Di Bello
   version: "1.0.0"
-allowed-tools: Bash(git:*), Bash(gh:*)
+allowed-tools: Bash
 ---
 
 # Prepare Review Commits
@@ -18,6 +18,17 @@ example "prepare review-ready commits" or "make this branch review-ready
 before I push". It must **not** activate for generic requests such as "commit
 my changes"; those are out of scope for this skill.
 
+## Scope
+
+Take **all** uncommitted, non-ignored work on the branch into the sequence:
+tracked modifications and deletions, changes already staged in the index, and
+untracked files that Git does not ignore. Nothing in that set may be silently
+left behind — if part of it cannot be committed safely, abort and say why.
+
+Never include an ignored path, and never use `git add -f` / `git add --force`
+to pull one in. If an ignored file looks like it belongs to the change, report
+it and let the user decide.
+
 ## Preflight
 
 1. Read repository instructions and contributor documentation, then inspect
@@ -26,15 +37,22 @@ my changes"; those are out of scope for this skill.
 2. Accept an explicit base from the request. Otherwise infer one from the
    branch's tracking configuration, repository default branch, or available
    PR context. Abort if no base can be identified.
-3. Abort without changing Git state when `HEAD` is detached, a merge/rebase/
-   cherry-pick is active, unmerged paths exist, or there are no relevant
-   changes.
-4. Infer the goal from repository guidance, local history, and optional PR or
+3. Abort without changing Git state when the branch has no commit yet (unborn
+   `HEAD`), `HEAD` is detached, a merge/rebase/cherry-pick is active, or
+   unmerged paths exist. Check the unborn case with
+   `git rev-parse --verify --quiet HEAD^{commit}` **before** running any
+   command that assumes `HEAD` resolves — plain `git rev-parse HEAD` fails on
+   an unborn branch.
+4. Abort if the working tree contains an untracked embedded Git repository.
+   Git snapshots such a directory only as a gitlink, so the backup below
+   cannot restore its contents and the transaction cannot be made safe.
+5. Infer the goal from repository guidance, local history, and optional PR or
    issue context. Abort if the full diff contains unrelated work or the intended
    narrative remains materially ambiguous.
 
-Report an already-clean working tree as a successful no-op — this is not a
-failure.
+A clean working tree — or one whose only changes are ignored paths — is a
+**successful no-op**, not an abort and not a failure. Report that there was
+nothing to commit, leave Git untouched, and stop.
 
 Inspect the base relationship only. Never run `git fetch`, `git rebase`, or
 any command that mutates a remote.
@@ -59,48 +77,163 @@ user when the plan produces more than eight commits.
 
 ## Make Changes Transactionally
 
-Before unstaging or creating any commit, record the recovery state in a
-unique, secure temporary state directory. Create it **outside the working
-tree** (for example under the repository's `.git` directory or the OS temp
-directory) so that it never appears in `git status`, diffs, or the sequence of
-staged changes it is meant to describe:
+Every commit, hook, formatter, code generator, and validation command may
+mutate the working tree. Treat the whole sequence as one transaction: take a
+complete backup **before** the first mutation, and on any failure restore the
+exact initial tracked, staged, unstaged, and untracked state — do not merely
+detect that it drifted.
+
+### 1. Take the backup
+
+Create the state directory **outside the repository** (in the OS temp
+directory) so no recovery step can reach it and it never appears in
+`git status`:
 
 ```bash
-state_dir="$(mktemp -d "$(git rev-parse --git-dir)/prc-state.XXXXXX")"
+root="$(git rev-parse --show-toplevel)"
+state_dir="$(mktemp -d "${TMPDIR:-/tmp}/prepare-review-commits.XXXXXX")"
+
 start_head="$(git rev-parse HEAD)"
-git diff --binary > "$state_dir/unstaged.patch"
-git diff --cached --binary > "$state_dir/staged.patch"
 git status --porcelain=v1 -uall > "$state_dir/status.before"
+# The untracked, non-ignored files this run adopts (used by the final report).
+git ls-files --others --exclude-standard -z > "$state_dir/untracked.before"
+
+# Exact staged (index) state.
+index_tree="$(git write-tree)"
+
+# Exact worktree state — tracked plus non-ignored untracked — as one tree.
+rm -f "$state_dir/fp.index"
+GIT_INDEX_FILE="$state_dir/fp.index" git -C "$root" read-tree HEAD
+GIT_INDEX_FILE="$state_dir/fp.index" git -C "$root" add -A -- .
+worktree_tree="$(GIT_INDEX_FILE="$state_dir/fp.index" git write-tree)"
+
+# Anchor the snapshot to a ref so it cannot be garbage-collected and a human
+# can recover manually if this agent dies mid-transaction.
+backup_commit="$(git commit-tree "$worktree_tree" -p "$start_head" \
+  -m "prepare-review-commits backup of $start_head")"
+git update-ref refs/prepare-review-commits/backup "$backup_commit"
+printf 'start_head=%s\nindex_tree=%s\nworktree_tree=%s\nbackup=%s\n' \
+  "$start_head" "$index_tree" "$worktree_tree" "$backup_commit" \
+  > "$state_dir/refs.before"
 ```
 
-Clean up the state directory only after the entire sequence succeeds.
+`GIT_INDEX_FILE` keeps this snapshot out of the real index, and seeding it
+from `HEAD` first means tracked-but-ignored files are captured too. Tell the
+user the backup ref and the state directory path before the first change.
 
-Preserve the original staged/unstaged split by resetting first, then staging
-only what belongs to the next planned commit:
+### 2. Stage each planned commit non-interactively
+
+Reset once so the index matches `HEAD`; from then on `git diff -- <path>` is
+the whole remaining `HEAD`-to-worktree diff for that path.
 
 ```bash
 git reset
-# Stage only the files and hunks that belong to the next planned commit.
-git add -- <whole-file-paths>
-git add -p -- <partially-owned-paths>
+```
+
+Stage whole files directly:
+
+```bash
+git add -- <path>...   # never `git add -f`
+```
+
+When one file's changes belong to more than one commit, do **not** use the
+interactive `git add -p` — this workflow must run unattended. Write the
+selected hunks to a patch file and apply that patch to the index:
+
+```bash
+git diff -U3 -- <path> > "$state_dir/candidate.patch"
+# Copy the `diff --git` / `index` / `---` / `+++` header plus only the `@@`
+# hunks that belong to this commit into "$state_dir/commit-<n>.patch". Hunk
+# line numbers stay valid because every hunk is offset against the same
+# pre-image, so a subset of hunks applies unchanged.
+git apply --cached --check "$state_dir/commit-<n>.patch"   # dry run first
+git apply --cached "$state_dir/commit-<n>.patch"
+```
+
+`git apply --cached` touches only the index, so the working tree keeps the
+remaining changes for later commits. Confirm the staged result with
+`git diff --cached` before committing, and regenerate the diff after each
+commit instead of reusing a stale patch.
+
+If a precise patch cannot be produced safely — a binary file, a partial split
+of a brand-new untracked file, a failing `--check`, or any uncertainty about
+the selection — widen that boundary to whole files, or abort **before**
+starting mutation. Never hand-edit hunk line counts or guess offsets.
+
+Commit with ordinary `git commit`. Never pass hook-bypass flags (e.g.
+`--no-verify`) — honor hooks and commit signing as configured:
+
+```bash
 git commit -m "<conventional message>"
 ```
 
-Use ordinary `git commit`. Never pass hook-bypass flags (e.g. `--no-verify`) —
-honor hooks and commit signing as configured.
+### 3. Recover on any failure
 
-If staging, commit, or a discovered validation check fails, restore all
-created commits and the original index split:
+Run recovery when staging, a hook, a commit, or a discovered validation
+command fails. Execute every step in order from the repository root. This is
+the only place a destructive Git command is permitted, and only because the
+backup above is complete and lives outside the working tree.
 
 ```bash
-git reset --mixed "$start_head"
-git apply --cached "$state_dir/staged.patch"
+# a. Drop the transaction commits and reset tracked files (backup-protected).
+git reset --hard "$start_head"
+
+# b. Delete every non-ignored untracked path, including the ones the
+#    transaction created. Step c restores the originals from the backup.
+#    `git clean -fd` (never `-x`) leaves ignored content untouched.
+git clean -fd
+
+# c. Restore exact worktree content, including untracked files a hook,
+#    formatter, or validation command modified or deleted.
+rm -f "$state_dir/restore.index"
+GIT_INDEX_FILE="$state_dir/restore.index" git -C "$root" read-tree "$worktree_tree"
+GIT_INDEX_FILE="$state_dir/restore.index" git -C "$root" checkout-index -a -f
+
+# d. Restore the exact staged/unstaged split.
+git read-tree "$index_tree"
+git update-index -q --refresh || true
 ```
 
-Then compare the saved status, staged patch, and unstaged patch with the
-restored repository. If they differ, stop and report the discrepancy instead
-of claiming recovery succeeded. Untracked paths are left in place by the mixed
-reset and must be checked against `status.before`.
+### 4. Verify the recovery, then clean up
+
+Recovery is not finished until all four checks pass:
+
+```bash
+test "$(git rev-parse HEAD)" = "$start_head"
+test "$(git write-tree)" = "$index_tree"
+
+rm -f "$state_dir/verify.index"
+GIT_INDEX_FILE="$state_dir/verify.index" git -C "$root" read-tree HEAD
+GIT_INDEX_FILE="$state_dir/verify.index" git -C "$root" add -A -- .
+test "$(GIT_INDEX_FILE="$state_dir/verify.index" git write-tree)" = "$worktree_tree"
+
+git status --porcelain=v1 -uall > "$state_dir/status.after"
+diff "$state_dir/status.before" "$state_dir/status.after"
+```
+
+Only after all four pass — or after the full sequence succeeds with no
+recovery — remove the backup:
+
+```bash
+git update-ref -d refs/prepare-review-commits/backup
+rm -rf "$state_dir"
+```
+
+If any check fails, stop immediately, change nothing else, keep both
+`refs/prepare-review-commits/backup` and `$state_dir`, and report the exact
+mismatch together with the manual recovery handle:
+
+```bash
+git checkout refs/prepare-review-commits/backup -- .
+```
+
+Never claim recovery succeeded without those checks passing.
+
+State these limits rather than papering over them: ignored content is
+deliberately left alone, so an ignored artifact written or changed by a hook
+or validation command is not reverted; and because Git cannot track an empty
+directory, an empty directory that existed before the run is removed by step
+(b) and not restored.
 
 ## Validate Each Commit
 
@@ -108,8 +241,9 @@ reset and must be checked against `status.before`.
    Makefiles, and CI configuration; never invent a command.
 2. Run the smallest relevant discovered command after each commit.
 3. Run the normal full discovered validation after the final commit.
-4. On any discovered-command failure, run transactional recovery and report
-   the failing command and output.
+4. On any discovered-command failure, run the transactional recovery in
+   "Make Changes Transactionally" — including its verification — and report
+   the failing command and its output.
 5. If no validation command exists, proceed but mark every created commit and
    the final summary as unvalidated.
 
@@ -124,6 +258,10 @@ The final report must include:
   unvalidated state.
 - An explicit statement that nothing was pushed.
 
+If the run ended in recovery, also report whether recovery verification
+passed. If it did not, report the mismatch, the retained backup ref
+`refs/prepare-review-commits/backup`, and the retained state directory path.
+
 ## Do Not
 
 - Activate for a generic "commit my changes" request without explicit
@@ -131,6 +269,11 @@ The final report must include:
 - Rewrite, amend, or reorder any commit that existed before this workflow ran.
 - Run `git fetch`, `git rebase`, `git push`, or any other remote mutation.
 - Bypass hooks or commit signing.
+- Use interactive commands such as `git add -p`, `git rebase -i`, or anything
+  that opens an editor or waits for keyboard input.
+- Force-add ignored paths, or run any `git clean` variant with `-x`.
+- Run `git reset --hard`, `git clean`, or any other destructive command
+  outside the documented, backup-protected recovery procedure.
 - Cap the commit count at an arbitrary number.
-- Claim recovery succeeded without verifying the restored state matches the
-  recorded status and patches.
+- Claim recovery succeeded without passing every recovery verification check.
+- Treat a clean or ignored-only working tree as a failure.
