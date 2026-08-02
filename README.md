@@ -1,9 +1,25 @@
-# PR Review Agent Skills
+# PR Preparation and Review Agent Skills
 
-A collection of [Agent Skills](https://agentskills.io) for automating PR code review workflows.
+A collection of [Agent Skills](https://agentskills.io) for preparing changes and
+automating pull-request review workflows.
 Compatible with Claude Code, GitHub Copilot, Cursor, Windsurf, and 30+ other agents.
 
 ## Skills
+
+### Prepare Review Commits
+
+Turns the current uncommitted diff into a logical sequence of validated,
+self-contained Conventional Commits, ready for pull-request review. Never
+rewrites history or pushes.
+
+**Install:**
+```bash
+npx skills add xpepper/pr-review-agent-skill/prepare-review-commits
+```
+
+[See skill README →](prepare-review-commits/README.md)
+
+---
 
 ### PR Review Loop
 
