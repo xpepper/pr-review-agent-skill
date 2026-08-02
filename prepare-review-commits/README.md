@@ -57,9 +57,10 @@ the repository default branch, or available PR context.
 The skill aborts without changing any Git state when:
 
 - No base branch can be identified.
+- `HEAD` is detached.
 - A merge, rebase, or cherry-pick is already in progress, or unmerged paths
   exist.
-- The diff mixes unrelated work and the intended narrative stays materially
+- The diff mixes unrelated work, or the intended narrative stays materially
   ambiguous.
 
 An already-clean working tree is reported as a successful no-op, not a
