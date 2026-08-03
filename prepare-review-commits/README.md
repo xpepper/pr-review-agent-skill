@@ -20,7 +20,8 @@ context relevance — you have to invoke it yourself:
 /prepare-review-commits
 ```
 
-Naming the skill in a request works too:
+On runtimes that ignore `disable-model-invocation`, the skill falls back to
+its description for activation — so naming it in a request works too:
 
 ```
 Use prepare-review-commits against release/2.4
