@@ -10,7 +10,8 @@ Compatible with Claude Code, GitHub Copilot, Cursor, Windsurf, and 30+ other age
 
 Turns the current uncommitted diff into a logical sequence of validated,
 self-contained Conventional Commits, ready for pull-request review. Never
-rewrites history or pushes.
+rewrites history or pushes. Manual-only: it runs only when you invoke it
+explicitly (`/prepare-review-commits`), never on the agent's own initiative.
 
 **Install:**
 ```bash
