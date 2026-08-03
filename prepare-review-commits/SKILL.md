@@ -5,18 +5,23 @@ license: MIT
 compatibility: Requires Git. Optionally uses gh CLI for pull request and issue context.
 metadata:
   author: Pietro Di Bello
-  version: "1.0.0"
+  version: "1.1.0"
 allowed-tools: Bash
+disable-model-invocation: true
 ---
 
 # Prepare Review Commits
 
 ## Trigger
 
-This workflow activates only for an explicit review-readiness request — for
-example "prepare review-ready commits" or "make this branch review-ready
-before I push". It must **not** activate for generic requests such as "commit
-my changes"; those are out of scope for this skill.
+This skill is **manual-only** (`disable-model-invocation: true`): an agent must
+never load or run it on its own initiative. It runs only when a human invokes
+it explicitly — `/prepare-review-commits`, or a request that names the skill.
+
+Even once invoked, the request must be a review-readiness one — for example
+"prepare review-ready commits" or "make this branch review-ready before I
+push". Generic requests such as "commit my changes" are out of scope; say so
+and stop rather than proceeding.
 
 ## Scope
 

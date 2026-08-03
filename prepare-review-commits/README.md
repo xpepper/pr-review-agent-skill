@@ -12,19 +12,32 @@ npx skills add xpepper/pr-review-agent-skill/prepare-review-commits
 
 ## Usage
 
-This skill activates only for an explicit review-readiness request. It does
-**not** run for generic requests like "commit my changes" — those stay out of
-scope.
+This skill is **manual-only**. Its frontmatter sets
+`disable-model-invocation: true`, so the agent never auto-loads it from
+context relevance — you have to invoke it yourself:
 
 ```
-Prepare review-ready commits for this branch
+/prepare-review-commits
 ```
-```
-Make this branch review-ready before I push
-```
+
+On runtimes that ignore `disable-model-invocation`, the skill falls back to
+its description for activation — so naming it in a request works too:
+
 ```
 Use prepare-review-commits against release/2.4
 ```
+```
+Run the prepare-review-commits skill, then stop
+```
+
+Once invoked, it still expects a review-readiness request — "prepare
+review-ready commits for this branch", "make this branch review-ready before I
+push". It does **not** run for generic requests like "commit my changes";
+those stay out of scope.
+
+> `disable-model-invocation` is honoured by Claude Code. Agents that do not
+> support the field ignore it and fall back to the description, which already
+> restricts activation to explicit review-readiness requests.
 
 ## What it does
 
