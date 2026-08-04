@@ -36,6 +36,20 @@ npx skills add xpepper/pr-review-agent-skill/pr-review-loop
 
 ---
 
+### PR Review Grill
+
+Walks through open PR review comments collaboratively, one at a time, challenging
+premises and recording the user's decision before any code changes.
+
+**Install:**
+```bash
+npx skills add xpepper/pr-review-agent-skill/pr-review-grill
+```
+
+[See skill README →](pr-review-grill/README.md)
+
+---
+
 ### Copilot Review Loop
 
 An in-session Copilot-driven review loop: triggers Copilot review, addresses
