@@ -6,7 +6,7 @@ compatibility: Requires gh CLI or another GitHub client, jq, and the PR branch c
 metadata:
   author: Pietro Di Bello
   version: "0.1.0"
-allowed-tools: Bash(gh:*)
+allowed-tools: Bash
 ---
 
 # PR Review Grill
