@@ -172,7 +172,9 @@ changes the same item to `needs-retriage`; it does not create a duplicate item.
 
 Choose in this order:
 
-1. resume an `awaiting-approval` initial or delta triage;
+1. resume an `awaiting-approval` initial or delta triage, first folding in any
+   newly reconciled `needs-triage` or `needs-retriage` items into that same
+   pending table before presenting it;
 2. delta-triage any `needs-triage` or `needs-retriage` item;
 3. resume the recorded `in-progress` item;
 4. process the next approved pending item;
@@ -216,9 +218,12 @@ Keep substantive feedback from human and bot reviewers.
   inspect git or GET the remote object. Never infer failure from a timeout and
   blindly repeat a side effect.
 
-If reconciliation finds any `needs-triage` or `needs-retriage` item, this
-invocation is a delta-triage unit. Do not process an already approved item in
-the same session.
+If reconciliation finds any `needs-triage` or `needs-retriage` item and no
+triage is currently `awaiting-approval`, this invocation is a delta-triage
+unit. Do not process an already approved item in the same session. If a
+triage is already `awaiting-approval`, do not open a second triage unit — fold
+the newly reconciled items into that same pending table before presenting it
+(see "Start of every invocation", priority 1).
 
 ## Unit 1 — Initial triage
 
