@@ -1,12 +1,12 @@
 ---
 name: pr-review-loop
-description: Use when addressing open PR review comments from any reviewer (human or bot) within the current agent session. For a fresh-context-per-comment approach, use ralph-wiggum-loop instead.
+description: Use when addressing open PR review comments from any reviewer (human or bot). Runs the existing in-session loop by default. When the user explicitly requests handoff mode, such as `/pr-review-loop --handoff`, processes one triage or comment-resolution unit per fresh session using a local handoff ledger. For unattended fresh-context automation, use ralph-wiggum-loop instead.
 license: MIT
 compatibility: Requires gh CLI or any other tool to interact with GitHub. PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.5.0"
-allowed-tools: Bash(gh:*)
+  version: "1.6.0"
+allowed-tools: Bash
 ---
 
 # PR Review Loop
@@ -28,6 +28,23 @@ Users trigger this skill with prompts like:
 
 - `gh` CLI (preferred). If unavailable, fall back to any tool available to interact with GitHub.
 - The PR branch must be checked out locally.
+
+## Mode selection
+
+Use **normal mode** unless the user explicitly requests handoff mode with
+`/pr-review-loop --handoff` or equivalent wording such as "continue the PR
+review in handoff mode."
+
+- **Handoff mode:** Read and follow
+  [references/handoff-mode.md](references/handoff-mode.md) instead of the
+  process below. Handoff mode is experimental and intentionally stops after one
+  unit of work so the user can start a fresh session.
+- **Normal mode:** Follow the existing process below unchanged. If
+  `.pr-review/HANDOFF.md` exists, warn once that normal mode may make its state
+  stale, then ignore the file. Do not read, update, or delete it.
+
+Never infer handoff mode merely from the presence of the handoff file. The user
+must select it explicitly in every fresh session.
 
 ## Process
 

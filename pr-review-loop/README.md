@@ -13,6 +13,36 @@ with an opinionated, resumable workflow.
 6. Updates the PR body if the new commits drifted its scope
 7. Posts a final PR summary when done
 
+## Execution modes
+
+### Normal mode
+
+The default workflow processes the approved queue in the current agent session.
+It remains resumable through focused commits, pushed progress, and re-fetching
+GitHub state.
+
+### Experimental handoff mode
+
+Use handoff mode when you want a fresh agent context for each unit of work:
+
+```text
+/pr-review-loop --handoff
+```
+
+The first session triages all current feedback, records your approval in a
+gitignored `.pr-review/HANDOFF.md`, and stops. Each later session:
+
+1. re-fetches GitHub and reconciles new or changed feedback;
+2. delta-triages feedback changes, or completes exactly one approved comment or
+   atomic cascade;
+3. updates the handoff and stops with the next invocation.
+
+Final PR-body and summary work happens in its own fresh session. The handoff is
+retained after completion so later reviewer feedback can reopen the workflow.
+
+Handoff mode is manual and sequential: explicitly invoke it in every fresh
+session and do not run two handoff agents concurrently in the same worktree.
+
 ## Key property: resumable
 
 The skill can be interrupted and restarted in a fresh context window at any point
@@ -51,6 +81,32 @@ Use pr-review-loop on PR #123
 ```
 Run the PR review loop on this branch
 ```
+
+To use experimental handoff mode:
+
+```text
+/pr-review-loop --handoff
+```
+
+or:
+
+```text
+Continue the PR review in handoff mode
+```
+
+### Install the experimental version from a PR branch
+
+Replace `<pr-branch>` with the pull request's head branch:
+
+```bash
+npx skills add \
+  "https://github.com/xpepper/pr-review-agent-skill/tree/<pr-branch>/pr-review-loop" \
+  -a claude-code \
+  --yes
+```
+
+This uses the `skills` CLI's documented direct-path GitHub source format, so
+only the `pr-review-loop` skill from that branch is installed.
 
 ## Optional: Perplexity for deep research
 
