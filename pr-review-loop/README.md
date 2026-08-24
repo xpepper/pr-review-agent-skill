@@ -100,13 +100,13 @@ Replace `<pr-branch>` with the pull request's head branch:
 
 ```bash
 npx skills add \
-  "https://github.com/xpepper/pr-review-agent-skill/tree/<pr-branch>/pr-review-loop" \
+  "xpepper/pr-review-agent-skill#<pr-branch>@pr-review-loop" \
   -a claude-code \
   --yes
 ```
 
-This uses the `skills` CLI's documented direct-path GitHub source format, so
-only the `pr-review-loop` skill from that branch is installed.
+The quoted `#<pr-branch>@pr-review-loop` source pins the Git branch, including
+branch names containing `/`, and selects only the `pr-review-loop` skill.
 
 ## Optional: Perplexity for deep research
 
