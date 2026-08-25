@@ -1,6 +1,6 @@
 ---
 name: copilot-review-loop
-description: Use when you want GitHub Copilot to review a PR and automatically address its feedback within the current agent session. For any reviewer (human or bot), use pr-review-loop; for a fresh-context-per-comment approach, use ralph-wiggum-loop.
+description: Use when you want GitHub Copilot to review a PR and automatically address its feedback within the current agent session. For any reviewer (human or bot), use pr-review-loop; when an external shell loop should drive one session per comment, use ralph-wiggum-loop.
 license: MIT
 compatibility: Requires gh CLI. The gh-copilot-review extension is recommended (gh extension install ChrisCarini/gh-copilot-review). PR branch must be checked out locally.
 metadata:
