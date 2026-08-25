@@ -15,11 +15,12 @@ this reference overrides a boundary or state rule.
 - [Required handoff structure](#required-handoff-structure)
 - [Item identity and states](#item-identity-and-states)
 - [Start of every invocation](#start-of-every-invocation)
-- [Unit 1 — Initial triage](#unit-1--initial-triage)
-- [Unit 2 — Delta triage](#unit-2--delta-triage)
-- [Unit 3 — Process one approved item](#unit-3--process-one-approved-item)
-- [Unit 4 — Finalization](#unit-4--finalization)
-- [Final response for every unit](#final-response-for-every-unit)
+- [Scope: triage all current feedback](#scope-triage-all-current-feedback)
+- [Scope: triage new or changed feedback](#scope-triage-new-or-changed-feedback)
+- [Scope: address the next approved ledger item](#scope-address-the-next-approved-ledger-item)
+- [Scope: finalize the PR review cycle](#scope-finalize-the-pr-review-cycle)
+- [User-facing scope names](#user-facing-scope-names)
+- [Final response for every scope](#final-response-for-every-scope)
 
 ## Non-negotiable boundaries
 
@@ -27,11 +28,11 @@ this reference overrides a boundary or state rule.
   equivalent wording in the current session.
 - Use one local checkout and one active handoff agent at a time. Do not add
   locking or run overlapping sessions.
-- Complete exactly one unit per session:
+- Complete exactly one scope per session:
   - initial or delta triage;
   - one approved comment action or confirmed atomic cascade;
   - one finalization pass.
-- Stop after the unit even when more context appears available.
+- Stop after the scope even when more context appears available.
 - A cascade is one item only when applying one comment alone would leave the
   code inconsistent. Do not batch merely related comments for convenience.
 - Do not migrate an in-progress normal-mode run automatically. If normal-mode
@@ -168,7 +169,7 @@ changes the same item to `needs-retriage`; it does not create a duplicate item.
    identity.
 2. Re-fetch all GitHub feedback before choosing work.
 3. Reconcile remote state, local git state, and recorded checkpoints.
-4. Choose exactly one unit using the rules below.
+4. Choose exactly one scope using the rules below.
 
 Choose in this order:
 
@@ -219,15 +220,15 @@ Keep substantive feedback from human and bot reviewers.
   blindly repeat a side effect.
 
 If reconciliation finds any `needs-triage` or `needs-retriage` item and no
-triage is currently `awaiting-approval`, this invocation is a delta-triage
-unit. Do not process an already approved item in the same session. If a
-triage is already `awaiting-approval`, do not open a second triage unit — fold
-the newly reconciled items into that same pending table before presenting it
-(see "Start of every invocation", priority 1).
+triage is currently `awaiting-approval`, this invocation must triage new or
+changed feedback. Do not process an already approved item in the same session.
+If a triage is already `awaiting-approval`, do not open a second triage scope —
+fold the newly reconciled items into that same pending table before presenting
+it (see "Start of every invocation", priority 1).
 
-## Unit 1 — Initial triage
+## Scope: triage all current feedback
 
-Use this unit when no handoff exists.
+Use this scope when no handoff exists.
 
 1. Reject automatic migration when `.pr-review/plan-*.md` indicates an
    in-progress normal-mode run.
@@ -255,9 +256,10 @@ issues, resolve threads, commit, or push during initial triage.
 If the user does not approve, retain the provisional handoff so a fresh
 handoff session can resume the approval gate.
 
-## Unit 2 — Delta triage
+## Scope: triage new or changed feedback
 
-Use this unit whenever reconciliation finds new or materially changed feedback.
+Use this scope whenever reconciliation finds new or materially changed
+feedback.
 
 1. Triage only the delta.
 2. Preserve decisions and evidence for unchanged items.
@@ -280,12 +282,12 @@ may move ahead of lower-priority pending work but must not reorder earlier items
 in its own class.
 
 An explicit user override to a pending item also makes the current invocation a
-decision unit: update its class/action and stop. Keep completed entries immutable;
-a change to completed work becomes a new explicit follow-up item.
+decision scope: update its class/action and stop. Keep completed entries
+immutable; a change to completed work becomes a new explicit follow-up item.
 
-## Unit 3 — Process one approved item
+## Scope: address the next approved ledger item
 
-Use this unit when reconciliation finds no delta and at least one item is
+Use this scope when reconciliation finds no delta and at least one item is
 pending or already `in-progress`.
 
 ### Select and record
@@ -350,7 +352,7 @@ The item owns its complete lifecycle in this session: local change when needed,
 verification, commit/push, reply, reply verification, resolution when approved,
 and ledger update.
 
-### Finish the unit
+### Finish the scope
 
 1. Compact the item into `Completed this cycle`.
 2. Clear `Current item`.
@@ -366,7 +368,7 @@ and ledger update.
 
 Never process a second item in the same conversation.
 
-## Unit 4 — Finalization
+## Scope: finalize the PR review cycle
 
 Use a dedicated fresh session when the handoff is `ready-to-finalize`.
 
@@ -387,11 +389,30 @@ and eventually post another incremental summary. Keep terminal queue entries
 and prior summary IDs as audit evidence; do not edit or reconstruct prior
 summaries.
 
-## Final response for every unit
+## User-facing scope names
+
+Refer to the session by its action, not by an internal ordinal or abstract
+label. Never say `Unit 1`, `Unit 2`, `Unit 3`, or `Unit 4` in progress updates
+or final responses.
+
+Use these names:
+
+- `triage all current feedback`
+- `triage new or changed feedback`
+- `address the next approved ledger item`
+- `finalize the PR review cycle`
+
+When an item is known, include its stable key after the scope. For example:
+
+> No feedback delta found. This session will address the next approved ledger
+> item: `review-thread:PRRT_kwDOREvAE86cEz7S`.
+
+## Final response for every scope
 
 Keep the response compact:
 
-- state which single unit completed or why it checkpointed;
+- state which single scope completed or why it checkpointed, using the
+  user-facing action name above;
 - name the durable evidence, such as commit SHA or reply ID;
 - give the exact next invocation when more work remains.
 

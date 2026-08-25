@@ -23,7 +23,8 @@ GitHub state.
 
 ### Experimental handoff mode
 
-Use handoff mode when you want a fresh agent context for each unit of work:
+Use handoff mode when you want a fresh agent context for each narrowly defined
+scope:
 
 ```text
 /pr-review-loop --handoff
