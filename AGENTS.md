@@ -38,6 +38,7 @@ allowed-tools: Bash(gh:*)
 Rules:
 - `name`: letters, numbers, and hyphens only — must match the directory name
 - `description`: starts with "Use when", written in third person, describes triggering conditions and key capabilities (not the internal workflow)
+  - when the skill overlaps with a sibling in this repo, end the description with a pointer to the one that fits the other case (e.g. "for an in-session approach, use pr-review-loop"). State the boundary on an axis an agent can evaluate from the user's request, not on an internal implementation difference. Skip the pointer when the skill has no near-neighbour.
 - `allowed-tools`: list only tools the skill actually needs (e.g. `Bash(gh:*)` for skills that call the `gh` CLI)
 - `version`: bump when making breaking changes to the skill's behaviour
 - `disable-model-invocation: true` (optional): makes the skill manual-only — the agent will not auto-load it from context relevance, only on explicit invocation (`/<skill-name>`). Add it for skills whose side effects should never start unprompted. Honoured by Claude Code; agents that don't support it ignore the field and fall back to the `description`.

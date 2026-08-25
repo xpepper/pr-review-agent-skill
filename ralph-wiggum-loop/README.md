@@ -7,6 +7,12 @@ of work (triage or fix one comment), then stops. The shell loop handles repetiti
 
 Works with any agent that accepts piped instructions.
 
+> [!NOTE]
+> For a user-controlled workflow that pauses after triage and after every
+> comment so you can start each fresh session manually, use the experimental
+> `/pr-review-loop --handoff` mode instead. Ralph remains the unattended
+> external-loop option and does not yet share that handoff protocol.
+
 ## Why this pattern?
 
 - Each session is minimal — no context window exhaustion

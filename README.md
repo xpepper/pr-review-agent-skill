@@ -27,6 +27,9 @@ npx skills add xpepper/pr-review-agent-skill/prepare-review-commits
 Addresses all open PR review comments one at a time using an opinionated, resumable workflow.
 Works with any reviewer (human or bot).
 
+Runs in a single session by default. An experimental `--handoff` mode completes one unit
+of work per session and stops, so you start each fresh session yourself.
+
 **Install:**
 ```bash
 npx skills add xpepper/pr-review-agent-skill/pr-review-loop
