@@ -38,6 +38,9 @@ this reference overrides a boundary or state rule.
 - Do not migrate an in-progress normal-mode run automatically. If normal-mode
   plan files or unexplained partial edits exist without handoff state, stop and
   ask the user to choose which workflow owns them.
+- Treat any file in `.pr-review/` that is not `HANDOFF.md` or a `plan-*.md` as
+  unowned state. Do not read it as handoff state, do not delete it, and name it
+  to the user in the scope's final response so they can decide who owns it.
 - Treat git, GitHub, and verification commands as evidence. The handoff is a
   compact index of verified state, not a replacement for those sources.
 
@@ -230,8 +233,8 @@ it (see "Start of every invocation", priority 1).
 
 Use this scope when no handoff exists.
 
-1. Reject automatic migration when `.pr-review/plan-*.md` indicates an
-   in-progress normal-mode run.
+1. Reject automatic migration of normal-mode or unowned state in `.pr-review/`
+   (see "Non-negotiable boundaries").
 2. Identify and bind the current PR.
 3. Discover the repository's required safeguards, but do not run the baseline
    in this triage-only session.
@@ -414,6 +417,7 @@ Keep the response compact:
 - state which single scope completed or why it checkpointed, using the
   user-facing action name above;
 - name the durable evidence, such as commit SHA or reply ID;
-- give the exact next invocation when more work remains.
+- give the exact next invocation when more work remains;
+- name any unowned file found in `.pr-review/`, when one exists.
 
 Do not offer to process another item in the same session.
