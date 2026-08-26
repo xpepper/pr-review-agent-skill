@@ -38,9 +38,14 @@ this reference overrides a boundary or state rule.
 - Do not migrate an in-progress normal-mode run automatically. If normal-mode
   plan files or unexplained partial edits exist without handoff state, stop and
   ask the user to choose which workflow owns them.
-- Treat any file in `.pr-review/` that is not `HANDOFF.md` or a `plan-*.md` as
-  unowned state. Do not read it as handoff state, do not delete it, and name it
-  to the user in the scope's final response so they can decide who owns it.
+- `.pr-review/logs/` belongs to the external loop driver, not to this workflow.
+  Leave it alone: do not read it as handoff state, do not delete it, and do not
+  report it as unowned. It holds one transcript per driven session, so it grows
+  on every run and naming it each time would be noise, not information.
+- Treat any other file in `.pr-review/` that is not `HANDOFF.md` or a
+  `plan-*.md` as unowned state. Do not read it as handoff state, do not delete
+  it, and name it to the user in the scope's final response so they can decide
+  who owns it.
 - Treat git, GitHub, and verification commands as evidence. The handoff is a
   compact index of verified state, not a replacement for those sources.
 
