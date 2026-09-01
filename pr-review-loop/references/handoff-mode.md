@@ -19,6 +19,7 @@ this reference overrides a boundary or state rule.
 - [Scope: triage new or changed feedback](#scope-triage-new-or-changed-feedback)
 - [Scope: address the next approved ledger item](#scope-address-the-next-approved-ledger-item)
 - [Scope: finalize the PR review cycle](#scope-finalize-the-pr-review-cycle)
+- [Completed handoff cleanup](#completed-handoff-cleanup)
 - [User-facing scope names](#user-facing-scope-names)
 - [Final response for every scope](#final-response-for-every-scope)
 
@@ -98,6 +99,7 @@ Head branch: <branch>
 PR author: @<login>
 Last synchronized: <timestamp>
 Triage approved: <timestamp or "not approved">
+Cleanup: not offered | declined at cycle <N>
 
 ## Objective
 <one short paragraph>
@@ -190,7 +192,8 @@ Choose in this order:
 5. finalize when no action remains.
 
 If the handoff is `complete` and reconciliation finds no delta, report that the
-workflow is complete and stop without posting another summary.
+workflow is complete and follow "Completed handoff cleanup" without posting
+another summary. That section ends the session.
 
 ### Fetch all feedback
 
@@ -389,13 +392,49 @@ Use a dedicated fresh session when the handoff is `ready-to-finalize`.
    recorded summary. Include awaiting clarification items whose approved
    question was posted.
 5. Record the summary comment ID and URL.
-6. Set `Status: complete`, retain the handoff, and stop.
+6. Set `Status: complete` and retain the handoff until the user decides whether
+   to delete it.
+7. Follow "Completed handoff cleanup" in the final response. That section ends
+   the session.
 
-If later feedback arrives on the same PR, increment `Cycle`, reopen the existing
-item or add a new stable item, clear `Completed this cycle`, run delta triage,
-and eventually post another incremental summary. Keep terminal queue entries
-and prior summary IDs as audit evidence; do not edit or reconstruct prior
-summaries.
+If later feedback arrives on the same PR, set `Status: ready`, increment
+`Cycle`, reset `Cleanup` to `not offered`, reopen the existing item or add a new
+stable item, clear `Completed this cycle`, run delta triage, and eventually post
+another incremental summary.
+Moving `Status` off `complete` is what keeps a reopened cycle from satisfying
+the "Completed handoff cleanup" precondition while its queue and summary IDs
+are still needed. Keep terminal queue entries and prior summary IDs as audit
+evidence; do not edit or reconstruct prior summaries.
+
+## Completed handoff cleanup
+
+Both entry points that reach this section — the completion guard in "Start of
+every invocation" and step 7 of "Scope: finalize the PR review cycle" — route
+here only after a `complete` handoff and a reconciliation that found no feedback
+delta. Act on that established state: this section performs no further feedback
+fetch and re-checks no precondition.
+
+If `Cleanup` already reads `declined at cycle <current cycle>`, the offer was
+made and declined this cycle. Report that the workflow is complete and stop
+without re-asking.
+
+Otherwise resolve this exchange in the current conversation: ask the question
+below, wait for the user's reply in this same session, act on it, and only then
+stop. The "and stop" in the entry points above applies after this exchange, not
+before it.
+
+1. Explain the trade-off so the choice is informed: retaining
+   `.pr-review/HANDOFF.md` lets a later cycle reopen with its queue, remote IDs,
+   and summary history intact; deleting it drops the recorded reply and summary
+   IDs, so a later cycle can rediscover this workflow's own summary comment as
+   reviewer feedback.
+2. Ask whether the user wants to delete `.pr-review/HANDOFF.md` now.
+3. Keep the file unless the user explicitly confirms deletion. If the user
+   declines, also set `Cleanup: declined at cycle <current cycle>` so later
+   invocations do not re-ask.
+4. After confirmation, delete only `.pr-review/HANDOFF.md`, leave
+   `.pr-review/logs/` and every other file untouched, confirm the deletion, and
+   stop. This cleanup is not a new review scope.
 
 ## User-facing scope names
 
@@ -424,5 +463,7 @@ Keep the response compact:
 - name the durable evidence, such as commit SHA or reply ID;
 - give the exact next invocation when more work remains;
 - name any unowned file found in `.pr-review/`, when one exists.
+- when the handoff is complete, offer the cleanup choice described in
+  "Completed handoff cleanup".
 
 Do not offer to process another item in the same session.
