@@ -191,8 +191,8 @@ Choose in this order:
 5. finalize when no action remains.
 
 If the handoff is `complete` and reconciliation finds no delta, report that the
-workflow is complete, follow [Completed handoff cleanup](#completed-handoff-cleanup),
-and stop without posting another summary.
+workflow is complete and follow [Completed handoff cleanup](#completed-handoff-cleanup)
+without posting another summary. That section ends the session.
 
 ### Fetch all feedback
 
@@ -394,7 +394,7 @@ Use a dedicated fresh session when the handoff is `ready-to-finalize`.
 6. Set `Status: complete` and retain the handoff until the user decides whether
    to delete it.
 7. Follow [Completed handoff cleanup](#completed-handoff-cleanup) in the final
-   response and stop.
+   response. That section ends the session.
 
 If later feedback arrives on the same PR, increment `Cycle`, reopen the existing
 item or add a new stable item, clear `Completed this cycle`, run delta triage,
@@ -405,6 +405,10 @@ summaries.
 ## Completed handoff cleanup
 
 Once `Status: complete` and reconciliation finds no feedback delta:
+
+Resolve this exchange in the current conversation: ask the question below, wait
+for the user's reply in this same session, act on it, and only then stop. The
+"and stop" in the entry points above applies after this exchange, not before it.
 
 1. Explain that retaining `.pr-review/HANDOFF.md` lets a later cycle reopen with
    its queue, remote IDs, and summary history intact.
