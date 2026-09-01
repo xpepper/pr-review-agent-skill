@@ -99,6 +99,7 @@ Head branch: <branch>
 PR author: @<login>
 Last synchronized: <timestamp>
 Triage approved: <timestamp or "not approved">
+Cleanup: not offered | declined at cycle <N>
 
 ## Objective
 <one short paragraph>
@@ -397,8 +398,9 @@ Use a dedicated fresh session when the handoff is `ready-to-finalize`.
    response. That section ends the session.
 
 If later feedback arrives on the same PR, set `Status: ready`, increment
-`Cycle`, reopen the existing item or add a new stable item, clear `Completed
-this cycle`, run delta triage, and eventually post another incremental summary.
+`Cycle`, reset `Cleanup` to `not offered`, reopen the existing item or add a new
+stable item, clear `Completed this cycle`, run delta triage, and eventually post
+another incremental summary.
 Moving `Status` off `complete` is what keeps a reopened cycle from satisfying
 the [Completed handoff cleanup](#completed-handoff-cleanup) precondition while
 its queue and summary IDs are still needed. Keep terminal queue entries and
@@ -409,14 +411,21 @@ summaries.
 
 Once `Status: complete` and reconciliation finds no feedback delta:
 
-Resolve this exchange in the current conversation: ask the question below, wait
-for the user's reply in this same session, act on it, and only then stop. The
-"and stop" in the entry points above applies after this exchange, not before it.
+If `Cleanup` already reads `declined at cycle <current cycle>`, the offer was
+made and declined this cycle. Report that the workflow is complete and stop
+without re-asking.
+
+Otherwise resolve this exchange in the current conversation: ask the question
+below, wait for the user's reply in this same session, act on it, and only then
+stop. The "and stop" in the entry points above applies after this exchange, not
+before it.
 
 1. Explain that retaining `.pr-review/HANDOFF.md` lets a later cycle reopen with
    its queue, remote IDs, and summary history intact.
 2. Ask whether the user wants to delete `.pr-review/HANDOFF.md` now.
-3. Keep the file unless the user explicitly confirms deletion.
+3. Keep the file unless the user explicitly confirms deletion. If the user
+   declines, also set `Cleanup: declined at cycle <current cycle>` so later
+   invocations do not re-ask.
 4. After confirmation, delete only `.pr-review/HANDOFF.md`, leave
    `.pr-review/logs/` and every other file untouched, confirm the deletion, and
    stop. This cleanup is not a new review scope and does not require another
