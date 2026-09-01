@@ -424,8 +424,11 @@ below, wait for the user's reply in this same session, act on it, and only then
 stop. The "and stop" in the entry points above applies after this exchange, not
 before it.
 
-1. Explain that retaining `.pr-review/HANDOFF.md` lets a later cycle reopen with
-   its queue, remote IDs, and summary history intact.
+1. Explain the trade-off so the choice is informed: retaining
+   `.pr-review/HANDOFF.md` lets a later cycle reopen with its queue, remote IDs,
+   and summary history intact; deleting it drops the recorded reply and summary
+   IDs, so a later cycle can rediscover this workflow's own summary comment as
+   reviewer feedback.
 2. Ask whether the user wants to delete `.pr-review/HANDOFF.md` now.
 3. Keep the file unless the user explicitly confirms deletion. If the user
    declines, also set `Cleanup: declined at cycle <current cycle>` so later
