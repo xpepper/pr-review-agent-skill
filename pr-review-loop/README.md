@@ -36,7 +36,9 @@ gitignored `.pr-review/HANDOFF.md`, and stops. Each later session:
 1. re-fetches GitHub and reconciles new or changed feedback;
 2. delta-triages feedback changes, or completes exactly one approved comment or
    atomic cascade;
-3. updates the handoff and stops with the next invocation.
+3. updates the handoff and reports how many items are addressed, still
+   actionable, awaiting triage, or awaiting a reviewer;
+4. stops with the exact `/pr-review-loop --handoff` command and next scope.
 
 Final PR-body and summary work happens in its own fresh session. The handoff is
 retained after completion so later reviewer feedback can reopen the workflow.
