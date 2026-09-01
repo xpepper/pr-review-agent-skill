@@ -40,8 +40,14 @@ gitignored `.pr-review/HANDOFF.md`, and stops. Each later session:
    actionable, awaiting triage, or awaiting a reviewer;
 4. stops with the exact `/pr-review-loop --handoff` command and next scope.
 
-Final PR-body and summary work happens in its own fresh session. The handoff is
-retained after completion so later reviewer feedback can reopen the workflow.
+Final PR-body and summary work happens in its own fresh session. The handoff
+is retained through finalization so later reviewer feedback can reopen the
+workflow; keeping it also preserves the queue, remote comment IDs, and summary
+history. After the cycle is complete, the agent explains that deleting the
+handoff drops those records, then asks whether you want to delete only
+`.pr-review/HANDOFF.md` (the `.pr-review/logs/` directory and any other local
+review state are left untouched); cleanup never happens without your
+confirmation.
 
 Handoff mode is manual and sequential: explicitly invoke it in every fresh
 session and do not run two handoff agents concurrently in the same worktree.
