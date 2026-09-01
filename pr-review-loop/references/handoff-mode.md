@@ -409,7 +409,11 @@ summaries.
 
 ## Completed handoff cleanup
 
-Once `Status: complete` and reconciliation finds no feedback delta:
+Both entry points that reach this section — the completion guard in "Start of
+every invocation" and step 7 of "Scope: finalize the PR review cycle" — route
+here only after a `complete` handoff and a reconciliation that found no feedback
+delta. Act on that established state: this section performs no further feedback
+fetch and re-checks no precondition.
 
 If `Cleanup` already reads `declined at cycle <current cycle>`, the offer was
 made and declined this cycle. Report that the workflow is complete and stop
@@ -428,8 +432,7 @@ before it.
    invocations do not re-ask.
 4. After confirmation, delete only `.pr-review/HANDOFF.md`, leave
    `.pr-review/logs/` and every other file untouched, confirm the deletion, and
-   stop. This cleanup is not a new review scope and does not require another
-   feedback fetch.
+   stop. This cleanup is not a new review scope.
 
 ## User-facing scope names
 
