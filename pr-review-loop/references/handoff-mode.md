@@ -20,6 +20,7 @@ this reference overrides a boundary or state rule.
 - [Scope: address the next approved ledger item](#scope-address-the-next-approved-ledger-item)
 - [Scope: finalize the PR review cycle](#scope-finalize-the-pr-review-cycle)
 - [Completed handoff cleanup](#completed-handoff-cleanup)
+- [Progress recap](#progress-recap)
 - [User-facing scope names](#user-facing-scope-names)
 - [Final response for every scope](#final-response-for-every-scope)
 
@@ -436,6 +437,35 @@ before it.
    `.pr-review/logs/` and every other file untouched, confirm the deletion, and
    stop. This cleanup is not a new review scope.
 
+## Progress recap
+
+End every completed or checkpointed scope with a compact snapshot derived from
+the updated handoff queue:
+
+- **addressed:** `done`, `parked`, `rejected`, `acknowledged`,
+  `resolved-externally`, and `removed`;
+- **awaiting reviewer:** `asked`;
+- **approved work remaining:** `pending` and `in-progress`;
+- **decision remaining:** `needs-triage`, `needs-retriage`, and
+  `awaiting-approval`.
+
+Always report addressed items as `<addressed>/<total>`. Add the other non-zero
+counts so the user can see what prevents completion. For example:
+
+> Progress: 6/10 items addressed; 2 approved actions remain; 1 needs triage; 1
+> awaits reviewer.
+
+Then name the next scope and stable item, when known, and give the literal
+command for the fresh session:
+
+> Next: run `/pr-review-loop --handoff` to address
+> `review-thread:PRRT_kwDOREvAE86cEz7S`.
+
+Choose the proposed next scope with the same priority as the next invocation:
+triage decision items first, otherwise address the first approved item, otherwise
+finalize. When the cycle is complete with no delta, omit the command because no
+next loop is needed.
+
 ## User-facing scope names
 
 Refer to the session by its action, not by an internal ordinal or abstract
@@ -461,7 +491,8 @@ Keep the response compact:
 - state which single scope completed or why it checkpointed, using the
   user-facing action name above;
 - name the durable evidence, such as commit SHA or reply ID;
-- give the exact next invocation when more work remains;
+- give the [Progress recap](#progress-recap), followed by the exact next
+  invocation when more work remains;
 - name any unowned file found in `.pr-review/`, when one exists.
 - when the handoff is complete, offer the cleanup choice described in
   "Completed handoff cleanup".
