@@ -192,8 +192,8 @@ Choose in this order:
 5. finalize when no action remains.
 
 If the handoff is `complete` and reconciliation finds no delta, report that the
-workflow is complete and follow [Completed handoff cleanup](#completed-handoff-cleanup)
-without posting another summary. That section ends the session.
+workflow is complete and follow "Completed handoff cleanup" without posting
+another summary. That section ends the session.
 
 ### Fetch all feedback
 
@@ -394,18 +394,17 @@ Use a dedicated fresh session when the handoff is `ready-to-finalize`.
 5. Record the summary comment ID and URL.
 6. Set `Status: complete` and retain the handoff until the user decides whether
    to delete it.
-7. Follow [Completed handoff cleanup](#completed-handoff-cleanup) in the final
-   response. That section ends the session.
+7. Follow "Completed handoff cleanup" in the final response. That section ends
+   the session.
 
 If later feedback arrives on the same PR, set `Status: ready`, increment
 `Cycle`, reset `Cleanup` to `not offered`, reopen the existing item or add a new
 stable item, clear `Completed this cycle`, run delta triage, and eventually post
 another incremental summary.
 Moving `Status` off `complete` is what keeps a reopened cycle from satisfying
-the [Completed handoff cleanup](#completed-handoff-cleanup) precondition while
-its queue and summary IDs are still needed. Keep terminal queue entries and
-prior summary IDs as audit evidence; do not edit or reconstruct prior
-summaries.
+the "Completed handoff cleanup" precondition while its queue and summary IDs
+are still needed. Keep terminal queue entries and prior summary IDs as audit
+evidence; do not edit or reconstruct prior summaries.
 
 ## Completed handoff cleanup
 
@@ -465,6 +464,6 @@ Keep the response compact:
 - give the exact next invocation when more work remains;
 - name any unowned file found in `.pr-review/`, when one exists.
 - when the handoff is complete, offer the cleanup choice described in
-  [Completed handoff cleanup](#completed-handoff-cleanup).
+  "Completed handoff cleanup".
 
 Do not offer to process another item in the same session.
