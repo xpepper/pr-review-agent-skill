@@ -396,10 +396,13 @@ Use a dedicated fresh session when the handoff is `ready-to-finalize`.
 7. Follow [Completed handoff cleanup](#completed-handoff-cleanup) in the final
    response. That section ends the session.
 
-If later feedback arrives on the same PR, increment `Cycle`, reopen the existing
-item or add a new stable item, clear `Completed this cycle`, run delta triage,
-and eventually post another incremental summary. Keep terminal queue entries
-and prior summary IDs as audit evidence; do not edit or reconstruct prior
+If later feedback arrives on the same PR, set `Status: ready`, increment
+`Cycle`, reopen the existing item or add a new stable item, clear `Completed
+this cycle`, run delta triage, and eventually post another incremental summary.
+Moving `Status` off `complete` is what keeps a reopened cycle from satisfying
+the [Completed handoff cleanup](#completed-handoff-cleanup) precondition while
+its queue and summary IDs are still needed. Keep terminal queue entries and
+prior summary IDs as audit evidence; do not edit or reconstruct prior
 summaries.
 
 ## Completed handoff cleanup
