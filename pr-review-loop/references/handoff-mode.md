@@ -19,6 +19,7 @@ this reference overrides a boundary or state rule.
 - [Scope: triage new or changed feedback](#scope-triage-new-or-changed-feedback)
 - [Scope: address the next approved ledger item](#scope-address-the-next-approved-ledger-item)
 - [Scope: finalize the PR review cycle](#scope-finalize-the-pr-review-cycle)
+- [Completed handoff cleanup](#completed-handoff-cleanup)
 - [User-facing scope names](#user-facing-scope-names)
 - [Final response for every scope](#final-response-for-every-scope)
 
@@ -190,7 +191,8 @@ Choose in this order:
 5. finalize when no action remains.
 
 If the handoff is `complete` and reconciliation finds no delta, report that the
-workflow is complete and stop without posting another summary.
+workflow is complete, follow [Completed handoff cleanup](#completed-handoff-cleanup),
+and stop without posting another summary.
 
 ### Fetch all feedback
 
@@ -389,13 +391,29 @@ Use a dedicated fresh session when the handoff is `ready-to-finalize`.
    recorded summary. Include awaiting clarification items whose approved
    question was posted.
 5. Record the summary comment ID and URL.
-6. Set `Status: complete`, retain the handoff, and stop.
+6. Set `Status: complete` and retain the handoff until the user decides whether
+   to delete it.
+7. Follow [Completed handoff cleanup](#completed-handoff-cleanup) in the final
+   response and stop.
 
 If later feedback arrives on the same PR, increment `Cycle`, reopen the existing
 item or add a new stable item, clear `Completed this cycle`, run delta triage,
 and eventually post another incremental summary. Keep terminal queue entries
 and prior summary IDs as audit evidence; do not edit or reconstruct prior
 summaries.
+
+## Completed handoff cleanup
+
+Once `Status: complete` and reconciliation finds no feedback delta:
+
+1. Explain that retaining `.pr-review/HANDOFF.md` lets a later cycle reopen with
+   its queue, remote IDs, and summary history intact.
+2. Ask whether the user wants to delete `.pr-review/HANDOFF.md` now.
+3. Keep the file unless the user explicitly confirms deletion.
+4. After confirmation, delete only `.pr-review/HANDOFF.md`, leave
+   `.pr-review/logs/` and every other file untouched, confirm the deletion, and
+   stop. This cleanup is not a new review scope and does not require another
+   feedback fetch.
 
 ## User-facing scope names
 
@@ -424,5 +442,7 @@ Keep the response compact:
 - name the durable evidence, such as commit SHA or reply ID;
 - give the exact next invocation when more work remains;
 - name any unowned file found in `.pr-review/`, when one exists.
+- when the handoff is complete, offer the cleanup choice described in
+  [Completed handoff cleanup](#completed-handoff-cleanup).
 
 Do not offer to process another item in the same session.
