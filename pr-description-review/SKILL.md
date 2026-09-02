@@ -21,7 +21,7 @@ Accept any of these:
 2. The PR associated with the current branch.
 3. Pasted PR-description text.
 
-For a GitHub PR, use `gh` to read the title, body, base/head branches, changed files, commits, and relevant diff. For the current branch, identify its PR first. For pasted text, review only what is available and mark unverifiable facts instead of inventing repository context.
+For a GitHub PR, read the title, body, base/head branches, changed files, and commits with `gh pr view <url-or-number> --json number,title,body,baseRefName,headRefName,files,commits`, and the relevant diff with `gh pr diff <url-or-number>`. For the current branch, run the same commands with no PR argument; `gh` resolves the PR for the checked-out branch. For pasted text, review only what is available and mark unverifiable facts instead of inventing repository context.
 
 Do not update the PR. Produce a review and an improved draft for the user to approve separately.
 
