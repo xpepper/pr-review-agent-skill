@@ -93,7 +93,7 @@ Classify important statements in the proposed description:
 
 Preserve author-provided facts in the draft, but phrase them as established team context rather than pretending they were independently verified. Use `[confirm: ...]` placeholders for unknown facts that materially affect review.
 
-Never invent:
+Never invent (authoritative list; the rules below refer back to it):
 
 - frontend reachability or request timing;
 - upstream resolver behavior;
@@ -110,7 +110,7 @@ Never invent:
 4. Explain how each material gap could cause a reviewer to misread the change.
 5. Draft the smallest improved description that closes the material gaps.
 6. Preserve useful existing text, ticket links, formatting, and verified claims.
-7. Use concise placeholders rather than fabricating missing details.
+7. Rather than fabricating a missing detail, use a concise placeholder, as required by the `Never invent` list in Evidence Calibration.
 
 ## Output Format
 
@@ -163,4 +163,4 @@ Before returning the draft, confirm that:
 - mocks are not presented as proof of production reachability;
 - pre-existing limitations are distinguished from regressions;
 - review focus points reviewers toward real uncertainty;
-- no unsupported claims were added.
+- nothing on the `Never invent` list in Evidence Calibration was added.
