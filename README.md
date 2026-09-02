@@ -53,6 +53,22 @@ npx skills add xpepper/pr-review-agent-skill/pr-review-grill
 
 ---
 
+### PR Description Review
+
+Reviews and improves pull-request descriptions so human and agent reviewers
+receive the end-to-end flow, external contracts, rollout constraints, accepted
+limitations, and evidence needed for focused feedback. Read-only: it drafts an
+improved description without publishing it.
+
+**Install:**
+```bash
+npx skills add xpepper/pr-review-agent-skill/pr-description-review
+```
+
+[See skill README →](pr-description-review/README.md)
+
+---
+
 ### Copilot Review Loop
 
 An in-session Copilot-driven review loop: triggers Copilot review, addresses
