@@ -39,7 +39,7 @@ Stop when there is enough evidence to assess whether the description prepares a 
 
 ## Review Properties
 
-Evaluate only properties relevant to the change. Mark irrelevant properties as `Not applicable`; do not force every PR into the same template.
+Proportionality rule, authoritative for both the review and the draft: scale the work to the change. Evaluate only properties relevant to the change and mark the rest as `Not applicable`. A small local refactor does not need a distributed-systems essay.
 
 ### Purpose and user-visible outcome
 
@@ -146,7 +146,7 @@ Omit `Likely reviewer misreads` or `Author confirmations needed` when empty.
 
 ## Drafting Guidance
 
-- Keep the description proportional to the PR. A small local refactor does not need a distributed-systems essay.
+- Keep the draft proportional, per the proportionality rule under Review Properties.
 - Prefer links and short invariant statements over long explanations.
 - Include a compact flow such as `Frontend -> API -> provider` when it removes ambiguity.
 - Make rollout facts explicit rather than asking reviewers to infer chronology from linked PRs.
