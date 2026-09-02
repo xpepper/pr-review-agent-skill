@@ -157,10 +157,6 @@ Omit `Likely reviewer misreads` or `Author confirmations needed` when empty.
 
 Before returning the draft, confirm that:
 
-- every material external dependency is named;
-- surprising behavior has an authoritative explanation or a confirmation placeholder;
-- rollout order is addressed when multiple deployables are involved;
-- mocks are not presented as proof of production reachability;
-- pre-existing limitations are distinguished from regressions;
-- review focus points reviewers toward real uncertainty;
-- nothing on the `Never invent` list in Evidence Calibration was added.
+- every property under Review Properties is either satisfied by the draft or explicitly marked `Not applicable`, with none silently skipped;
+- nothing on the `Never invent` list in Evidence Calibration was added;
+- every unknown that materially affects review carries a `[confirm: ...]` placeholder and appears under `Author confirmations needed`.
