@@ -3,10 +3,10 @@ name: pr-description-review
 description: Use when reviewing or improving a pull request description so reviewers receive the system context needed for focused, evidence-based feedback. Accepts a GitHub PR URL or number, the PR for the current branch, or pasted description text, and produces a context-gap review plus an improved draft without editing the PR.
 license: MIT
 compatibility: Requires git and gh for repository or GitHub PR inputs. Pasted descriptions can be reviewed without them. Read-only; never edits a pull request.
-allowed-tools: Bash(gh pr view:*), Bash(gh pr diff:*), Bash(gh pr status:*), Bash(git log:*), Bash(git diff:*), Bash(git show:*), Bash(git rev-parse:*), Read
 metadata:
   author: Pietro Di Bello
   version: "1.0.0"
+allowed-tools: Bash(gh pr view:*), Bash(gh pr diff:*), Bash(gh pr status:*), Bash(git log:*), Bash(git diff:*), Bash(git show:*), Bash(git rev-parse:*), Read
 ---
 
 # PR Description Review
