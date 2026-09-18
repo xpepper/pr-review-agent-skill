@@ -62,7 +62,7 @@ records:
 
 If `TODO.md` is already a tracked project file or belongs to another purpose,
 the skill uses `GUIDED_REVIEW_TODO.md` instead. It asks before adding the review
-file to `.git/info/exclude`.
+file to the clone's local Git exclude file (`info/exclude`).
 
 ## Safety properties
 
