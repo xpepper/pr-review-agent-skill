@@ -283,7 +283,8 @@ Before the first fix, resolve unrelated working-tree changes:
 - If a target file already contains unrelated author work, ask the user to
   stash or commit it first, or switch this review to edit-only mode.
 - Forbid `git commit -a`, pathless `git add`, and `git add -A`.
-- Stage only explicit intended paths or hunks.
+- Stage only explicit intended paths or hunks, always after an end-of-options
+  delimiter: `git add -- <path>...` or `git add -p -- <path>`.
 
 In working-tree mode, edit in place without committing by default. Create
 review commits only after the user establishes a committed baseline or
@@ -308,7 +309,7 @@ the work is separable. Its prompt must include:
 - relevant repository instructions;
 - expected test-first or characterization approach;
 - never-stage paths and the pre-existing dirty-file snapshot;
-- explicit staging paths; no broad staging;
+- explicit staging paths after `--`; no broad staging;
 - formatter, targeted checks, and documented completion command;
 - expected commit subject and active trailer policy;
 - instruction not to push.
