@@ -46,6 +46,10 @@ Classify the target before collecting evidence:
    `<base-sha>...HEAD`.
 2. **Explicit commit range**: use exactly the range semantics the user supplied.
    Do not silently replace two-dot with three-dot or recompute its endpoints.
+   The review is read-only unless the range's end SHA equals `HEAD` and the user
+   approves that checkout as the baseline for fixes; state which applies in the
+   opening review identity. A read-only review records accepted fixes instead
+   of applying them.
 3. **Working-tree change**: review staged and unstaged changes against `HEAD`.
    Untracked files are part of the review only when the user identifies them or
    they clearly belong to the change. State in the opening review identity that
@@ -259,6 +263,8 @@ Before the first fix, resolve unrelated working-tree changes:
 In working-tree mode, edit in place without committing by default. Create
 review commits only after the user establishes a committed baseline or
 explicitly approves committing the whole affected change.
+
+In a read-only range review, record an accepted fix under Open and do not edit.
 
 ### Implement one improvement
 
