@@ -219,17 +219,12 @@ pinned comparison, and `git status --short`. Any commit or path not explained
 by Done items or recorded review state reopens review for those files.
 
 If the review changed any file, run the full documented completion gate. A
-review that only recorded findings changed nothing, so skip it. Then report:
+review that only recorded findings changed nothing, so skip it.
 
-- review target and pinned comparison;
-- files reviewed in runtime order;
-- fixes and focused commits, if any;
-- commands run, results, and useful counts;
-- anything not verified;
-- open, deferred, and domain-question items with owners;
-- dropped findings and reasons;
-- PR-description claims that should change;
-- the TODO path.
+Close with a short summary, since the TODO already holds the details: how many
+items landed in each section and which ones block the merge, any fixes and
+their commits, anything you could not verify, and PR-description claims that
+should change. Point to the TODO path rather than repeating its contents.
 
 Then hand the TODO over. Offer to address its items one by one with
 [the fix-execution guide](references/fix-execution.md), or leave it for the user
