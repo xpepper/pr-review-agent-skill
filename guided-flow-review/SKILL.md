@@ -159,9 +159,10 @@ Review progress with that agreed order.
 
 Ask before adding the path to the local exclude file, located with
 `git rev-parse --git-path info/exclude` (in a linked worktree `.git` is a
-file, not a directory). An exclude protects only
-against accidental staging on this clone; it is not a security boundary. Offer
-to remove the entry at close.
+file, not a directory). An exclude protects only against accidental staging on
+this clone; it is not a security boundary. Record in the TODO whether this
+review added the entry or found it already present, and offer removal at close
+only for an entry this review added.
 
 When a matching review TODO already exists:
 
