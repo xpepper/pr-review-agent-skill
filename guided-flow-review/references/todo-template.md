@@ -8,7 +8,8 @@ step. Keep it synchronized after every routing decision and completed fix.
 
 Review mode: <PR/branch | explicit range | working tree>
 Branch: `<branch>`
-Comparison: `<exact expression>`
+Comparison: `<exact expression as supplied>`
+Pinned comparison: `<SHA endpoints, same .. or ... form; n/a unless range>`
 Pinned base: `<sha or n/a>`
 Starting HEAD: `<sha>`
 Review TODO: `<path>`

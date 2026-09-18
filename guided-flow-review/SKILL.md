@@ -78,8 +78,10 @@ PR head (or pull the missing commits) before collecting local evidence.
 If `gh` is unavailable or no PR exists, continue with local git evidence.
 
 Record the review mode, identifier, branch, exact comparison expression, pinned
-base SHA, and starting HEAD SHA. A pinned comparison keeps the reviewed change
-stable if the base branch advances.
+base SHA, and starting HEAD SHA. For an explicit range, also record the pinned
+comparison: both endpoints resolved to SHAs, keeping the supplied two-dot or
+three-dot form. A pinned comparison keeps the reviewed change stable if a base
+branch or range endpoint moves.
 
 ## 2. Inspect safeguards and the working tree
 
@@ -149,11 +151,13 @@ When a matching review TODO already exists:
 
 1. Reuse its pinned comparison.
 2. Compare current HEAD and changed paths with its recorded start.
-3. Preserve completed decisions and commit subjects.
-4. Append newly changed files to Review progress.
-5. Resume at the first unchecked step.
-6. Report rebases, amended commits, missing commits, or other drift before
-   continuing. A subject keeps a Done item understandable when its SHA changed.
+3. If history was rewritten (rebase, amended or missing commits), stop and
+   report it. Ask whether to re-pin the comparison; on re-pin, record the new
+   pins and reopen Review progress steps whose files differ under it.
+4. Preserve completed decisions and commit subjects. A subject keeps a Done
+   item understandable when its SHA changed.
+5. Append newly changed files to Review progress.
+6. Resume at the first unchecked step.
 
 If the TODO belongs to another branch, PR, or range, ask whether to archive it
 or use the collision-safe alternative path.
