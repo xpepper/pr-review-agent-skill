@@ -99,6 +99,8 @@ review for this same target. If it is a tracked project file
 leave it untouched and use `GUIDED_REVIEW_TODO.md`, or another clear root-level
 variant if that also collides, and tell the user.
 
+Snapshot before any review-generated file or command changes the tree:
+
 Create the file only after the user agrees the review order (section 4): read
 [the TODO template](references/todo-template.md), fill its metadata, and seed
 Review progress with that order.
