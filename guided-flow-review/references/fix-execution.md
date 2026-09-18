@@ -54,10 +54,11 @@ land together; do not publish a broken intermediate commit.
 For characterization tests, perform a mutation check: temporarily break the
 production behavior, observe the new test fail for the intended reason, restore
 the production code, and observe it pass. Mutate only a file with no
-uncommitted changes, and note the mutated path under Open before editing. On
-every outcome, including a failed or interrupted command, restore it with
-`git restore -- <file>`, confirm `git diff --quiet -- <file>`, then remove the
-note. On resume, restore any file that note still names before anything else.
+uncommitted changes, and set the TODO's `In flight` field to its path before
+editing, so an interrupted session knows what to undo. On every outcome,
+including a failed or interrupted command, restore it with
+`git restore -- <file>`, confirm `git diff --quiet -- <file>`, then reset the
+field to `none`.
 
 Delegate a self-contained fix when an implementation agent is available and
 the work is separable. Its prompt must include:

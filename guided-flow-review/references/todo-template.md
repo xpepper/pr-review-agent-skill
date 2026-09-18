@@ -14,6 +14,7 @@ Pinned base: `<sha or n/a>`
 Starting HEAD: `<sha>`
 Review TODO: `<path>`
 Started: <YYYY-MM-DD>
+In flight: none
 
 ## Open
 
