@@ -227,9 +227,9 @@ Use this format:
    - Recommendation: <smallest justified action>
 
 **Proposed routing**
-1. Fix now (recommended) - <smallest fix>
-2. Record in Missing tests (recommended) - <behavior to prove>
-3. Drop (recommended) - <reason>
+1. <finding 1 title> -> Fix now: <smallest fix>
+2. <finding 2 title> -> Missing tests: <behavior to prove>
+3. <finding 3 title> -> Drop: <reason>
 ```
 
 Finish with one focused question asking the user to confirm or override the
