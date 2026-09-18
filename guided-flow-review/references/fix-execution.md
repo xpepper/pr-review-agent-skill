@@ -92,7 +92,7 @@ Snapshot HEAD before delegation or editing. Afterwards:
    classify any other new path; never record a SHA while its output is dirty.
 6. Run the repository's documented completion gate after a delegated hand-back
    and report test/check counts when available. For direct edits, follow the
-   same repository gate policy. Always run the full completion gate at close.
+   same repository gate policy. The review also runs the full gate at close.
 7. Record SHA plus commit subject in Done and remove or move the source item.
 
 If a later fix changes an already reviewed file, mark the affected step for a

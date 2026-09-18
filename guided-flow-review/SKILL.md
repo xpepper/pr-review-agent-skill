@@ -211,7 +211,8 @@ Before closing, recompute `git rev-parse HEAD`, the changed paths under the
 pinned comparison, and `git status --short`. Any commit or path not explained
 by Done items or recorded review state reopens review for those files.
 
-Run the full documented completion gate. Then report:
+If the review changed any file, run the full documented completion gate. A
+review that only recorded findings changed nothing, so skip it. Then report:
 
 - review target and pinned comparison;
 - files reviewed in runtime order;
