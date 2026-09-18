@@ -325,6 +325,10 @@ short re-review and identify those hunks as review-generated.
 Finish only when every changed file is checked or explicitly excluded and every
 finding has a durable route.
 
+Before closing, recompute `git rev-parse HEAD`, the changed paths under the
+pinned comparison, and `git status --short`. Any commit or path not explained
+by Done items or recorded review state reopens review for those files.
+
 Run the full documented completion gate. Then report:
 
 - review target and pinned comparison;
