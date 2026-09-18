@@ -22,6 +22,23 @@ npx skills add xpepper/pr-review-agent-skill/prepare-review-commits
 
 ---
 
+### Guided Flow Review
+
+Reviews a PR, branch, commit range, or working-tree change collaboratively with
+its author. It follows the runtime flow instead of diff order, presents one
+evidence-led step at a time, and waits for the author to route every finding
+before changing code. Decisions and progress are kept in a disposable,
+resumable review TODO.
+
+**Install:**
+```bash
+npx skills add xpepper/pr-review-agent-skill/guided-flow-review
+```
+
+[See skill README →](guided-flow-review/README.md)
+
+---
+
 ### PR Review Loop
 
 Addresses all open PR review comments one at a time using an opinionated, resumable workflow.
