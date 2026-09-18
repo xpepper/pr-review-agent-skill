@@ -26,8 +26,9 @@ and progress survive context loss.
   order.
 - Present evidence before a finding. A suspicion without a `file:line` or a
   command and relevant output is not ready to present.
-- End each step with one routing question covering every numbered point, and
-  route every point exactly once: a TODO section, or drop with a reason.
+- Route every finding exactly once: a TODO section, or drop with a reason. Ask
+  one routing question per step that has findings; move on without stopping
+  when a step has none.
 - The review is read-only. Change code only when the user asks to fix an item,
   and then follow [the fix-execution guide](references/fix-execution.md).
 - Keep domain questions as questions. Do not turn an unresolved domain premise
@@ -71,9 +72,10 @@ commands, since branch names can contain shell metacharacters. When the commit
 count exceeds the sample, inspect older commits only on demand. If `gh` is
 unavailable or no PR exists, continue with local git evidence.
 
-Record the review mode, identifier, branch, comparison, and SHAs: pinned base,
-starting `HEAD`, and for a range both endpoints. Pinning keeps the reviewed
-change stable if a branch moves during a long review.
+Record the review mode, identifier, branch, comparison, and SHAs (pinned base,
+starting `HEAD`, and for a range both endpoints) in the review TODO; pinning
+keeps the reviewed change stable if a branch moves during a long review. In the
+conversation, state the target in a sentence rather than listing the SHAs.
 
 ## 2. Read the project context
 
@@ -135,34 +137,38 @@ Read the current files, the relevant base versions, and enough dependencies to
 judge how the change is used. Present dependent-code findings under the current
 step rather than jumping ahead.
 
-Use this format:
+Talk it through like a colleague at the keyboard, not a form. A step has three
+beats, in prose, without fixed headings:
+
+- what this file does in the flow and what changed, in a sentence or two;
+- what is good about it, concretely, so the author knows what to keep;
+- the findings, numbered, each with its evidence (`file:line` or a command and
+  its output), why it matters, and the TODO section you recommend. Say plainly
+  when one blocks the merge, and label taste as taste.
+
+For example:
 
 ```markdown
-## Step N: `<file(s)>`
+**Step 2 · `src/routes/orders.ts`** (the HTTP handler the new endpoint hits)
 
-**Flow role**: <why this runs here>
+Good: it validates the body with the existing `orderSchema` before touching
+the service, so bad input never reaches the domain layer.
 
-**What changed**: <short comparison with the pinned base/range>
+Two things:
+1. The 404 branch returns `{ error }` while every other route returns
+   `{ message }` (`src/routes/orders.ts:41` vs `src/routes/users.ts:28`), so
+   clients parsing errors will miss it. -> Open
+2. The retry count is hard-coded to 3 (`:57`); taste, but a named constant
+   would read better. -> Refactorings
 
-**What looks right**
-- <concrete property and why it is correct>
-
-**Points to discuss**
-1. **[blocking | should | nit | question for <owner>] <title>**
-   - Evidence: `<file:line>` or `<command>` -> `<relevant output>`
-   - Impact: <observable risk, maintenance cost, or uncertainty>
-   - Recommendation: <smallest justified action>
-
-**Proposed routing**
-1. <finding 1 title> -> Open: <what must change before merge>
-2. <finding 2 title> -> Missing tests: <behavior to prove>
-3. <finding 3 title> -> Drop: <reason>
+OK with those routes?
 ```
 
-Finish with one focused question asking the user to confirm or override the
-proposed routing, answerable as `1 Open, 2 Missing tests, 3 drop`. Each numbered
-row corresponds to the finding with the same number; show one recommended
-destination per finding, not a generic menu of destinations.
+When a step has findings, end with one question asking the user to confirm or
+override the routes, answerable as `1 Missing tests, 2 drop`. When it has none,
+say what you checked in a line or two, mark it in the TODO, and go straight on
+to the next step. Stopping only when there is something to decide keeps the
+review moving.
 
 If the user wants to fix an item right away instead of recording it, record it
 first, then follow [the fix-execution guide](references/fix-execution.md). If
