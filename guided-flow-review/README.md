@@ -1,28 +1,28 @@
 # Guided Flow Review
 
-An [Agent Skills](https://agentskills.io) skill for reviewing a pull request or
-other identifiable change collaboratively with its author.
+An [Agent Skills](https://agentskills.io) skill for walking through a pull
+request (your own draft or someone else's) or other identifiable change
+together, file by file, and collecting the outcome in a review TODO.
 
 Instead of reading files in diff order, the skill follows the path the software
 actually runs: trigger or entry point, wiring, configuration, core behavior,
-tests, packaging, and documentation. Each review step ends with an explicit
-decision before any code changes.
+tests, packaging, and documentation. Each step discusses what looks right and
+what could improve, and ends with an explicit decision on where each finding
+goes.
 
 ## What it does
 
 1. Identifies and pins the reviewed PR, branch, commit range, or working-tree
    change.
-2. Reads repository safeguards and separates reviewed changes from unrelated
-   author work.
+2. Reads the project's instructions so findings follow its conventions.
 3. Derives and presents a runtime-flow review order.
 4. Reviews one file or tightly coupled group at a time.
 5. Presents evidenced, weighted findings with a recommended route.
-6. Lets the author choose whether to fix, record, or drop each finding.
+6. Lets you record each finding in a TODO section or drop it.
 7. Maintains a disposable, resumable review TODO at the repository root.
-8. Applies accepted fixes as focused, verified commits when the review target
-   has a safe committed baseline.
-9. Closes with validation results, remaining questions, and suggested PR
-   description updates.
+8. Closes with a summary and hands the TODO over: address items one by one
+   (as focused, verified commits), share it with the team, or turn items into
+   tickets. Fixing is opt-in.
 
 ## When to use it
 
@@ -61,20 +61,17 @@ records:
 - review progress in runtime order.
 
 If `TODO.md` is already a tracked project file or belongs to another purpose,
-the skill uses `GUIDED_REVIEW_TODO.md` instead. It asks before adding the review
-file to the clone's local Git exclude file (`info/exclude`).
+the skill uses `GUIDED_REVIEW_TODO.md` instead.
 
 ## Safety properties
 
-- Pins the base SHA or exact comparison so a moving base branch does not change
-  the review silently.
-- Scans staged, unstaged, and untracked files before edits.
-- Keeps unrelated work, local environment files, and review state on a
-  never-stage list.
+- Reviews read-only: code changes only when you ask to fix an item.
+- Pins the base SHA or exact comparison so a moving branch does not change the
+  review silently.
 - Never copies secret values into review notes or implementation prompts.
-- Uses edit-only mode for uncommitted changes unless the author establishes a
-  committed baseline.
-- Requires explicit staging and verifies each focused commit before continuing.
+- When fixing, keeps unrelated work, local environment files, and the review
+  TODO on a never-stage list, stages explicit paths only, and verifies each
+  focused commit before continuing.
 - Does not push, edit the PR, publish a summary, or create tickets unless asked.
 
 ## Install
