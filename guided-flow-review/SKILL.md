@@ -95,13 +95,15 @@ Snapshot before any review-generated file or command changes the tree:
 
 ```bash
 git status --short
-git diff
-git diff --cached
+git diff --name-status
+git diff --cached --name-status
 git stash list
 ```
 
-Classify existing modifications as part of the reviewed change or unrelated
-author work. Build a **never-stage list** containing:
+Classify existing modifications by path as part of the reviewed change or
+unrelated author work before printing any patch content. Render patches only for
+paths admitted to the review and never for credential or environment files.
+Build a **never-stage list** containing:
 
 - every unrelated dirty or untracked path;
 - local environment and credential files;
@@ -300,16 +302,16 @@ Snapshot HEAD before delegation or editing. Afterwards:
 
 1. Confirm the new commit's parent is the expected HEAD; report rebases,
    amendments, or parallel author commits.
-2. Inspect `git show --stat --oneline <sha>` and the full patch.
-3. Confirm the commit file list equals the intended list.
-4. Compare removed and added assertions so coverage was not silently traded
-   away.
-5. Confirm never-stage paths and the review TODO are absent from the commit.
-6. Run formatting and targeted tests/checks.
-7. Run the repository's documented completion gate after a delegated hand-back
+2. Inspect `git show --stat --oneline <sha>`.
+3. Confirm the commit file list equals the intended list and that never-stage
+   paths and the review TODO are absent; stop if not, without printing the patch.
+4. Inspect the full patch and compare removed and added assertions so coverage
+   was not silently traded away.
+5. Run formatting and targeted tests/checks.
+6. Run the repository's documented completion gate after a delegated hand-back
    and report test/check counts when available. For direct edits, follow the
    same repository gate policy. Always run the full completion gate at close.
-8. Record SHA plus commit subject in Done and remove or move the source item.
+7. Record SHA plus commit subject in Done and remove or move the source item.
 
 If a later fix changes an already reviewed file, mark the affected step for a
 short re-review and identify those hunks as review-generated.
