@@ -26,21 +26,35 @@ goes.
 
 ## When to use it
 
-Use it when you want to understand and improve a change together:
+Use it when you want to understand and improve a change together.
+
+The skill is **manual-only**. Its frontmatter sets
+`disable-model-invocation: true`, so the agent never starts it on its own, even
+when a request looks like a review. Invoke it yourself, optionally with the
+target and where to start:
 
 ```text
-We are reviewing this PR together. Follow the flow from the cronjob through
-main and review each changed file with me.
+/guided-flow-review
 ```
 
 ```text
-Walk me through this branch one runtime step at a time. Do not change anything
-until I decide how to route each finding.
+/guided-flow-review PR #42, follow the flow from the cronjob through main
 ```
 
 ```text
-Review my current working-tree changes with me and keep a TODO of our decisions.
+/guided-flow-review my current working-tree changes
 ```
+
+On runtimes that ignore `disable-model-invocation`, the skill falls back to its
+description, which also limits activation to explicit requests that name the
+skill:
+
+```text
+Use guided-flow-review on this branch
+```
+
+> `disable-model-invocation` is honoured by Claude Code. Agents that do not
+> support the field ignore it and fall back to the description.
 
 For a fast batch review, use a batch code-review workflow. To discuss existing
 reviewer comments, use

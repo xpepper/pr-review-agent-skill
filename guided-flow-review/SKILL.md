@@ -1,15 +1,22 @@
 ---
 name: guided-flow-review
-description: Use when someone wants to walk through a PR (their own draft or someone else's), branch, commit range, or working-tree change together, file by file in runtime-flow order, discussing what is good and what could improve, and collecting findings into a review TODO. Trigger for "review this PR with me", "walk me through this change", "follow the flow", "guided review", or "review each changed file". For existing PR review comments, use pr-review-grill or pr-review-loop instead.
+description: Use only when the user explicitly invokes guided-flow-review (for example /guided-flow-review) to walk through a PR (their own draft or someone else's), branch, commit range, or working-tree change together, file by file in runtime-flow order, discussing what is good and what could improve, and collecting findings into a review TODO. Manual-only; do not start it from context relevance. For existing PR review comments, use pr-review-grill or pr-review-loop instead.
 license: MIT
 compatibility: Requires git and an interactive user. Uses gh when reviewing a GitHub PR; otherwise works from a local branch, explicit commit range, or working tree. Optional fixes require the repository's documented validation commands.
 metadata:
   author: Pietro Di Bello
   version: "0.1.0"
 allowed-tools: Bash
+disable-model-invocation: true
 ---
 
 # Guided Flow Review
+
+This skill is **manual-only** (`disable-model-invocation: true`): never load or
+start it on your own initiative, however well a request matches. It runs only
+when the user invokes it explicitly, as `/guided-flow-review` or by naming the
+skill. A guided review takes the user's time step by step, so it should start
+only when they ask for one.
 
 Walk through a change with the user in the order the software runs, not the
 order files happen to appear in a diff. For each step, discuss what is good and
