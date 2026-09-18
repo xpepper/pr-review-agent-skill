@@ -67,14 +67,16 @@ gh pr view '<pr-number-or-url>' --json number,title,body,baseRefName,headRefName
 git rev-parse HEAD
 git rev-parse --verify --end-of-options '<base-ref>^{commit}'
 git merge-base HEAD '<base-tip-sha>'
-git log --oneline '<base-sha>..HEAD'
+git rev-list --count '<base-sha>..HEAD'
+git log --oneline -n 30 '<base-sha>..HEAD'
 git diff --stat '<base-sha>...HEAD'
 ```
 
 Refs come from the user or the remote, so treat them as untrusted input: reject
 any containing characters outside `A-Za-z0-9._/-` instead of escaping them,
 substitute them single-quoted, resolve them to SHAs once, and use only the SHAs
-in later commands.
+in later commands. When the count exceeds the sample, inspect older commits
+only on demand.
 
 Pass the PR the user named; omit the identifier only when they mean the current
 branch's PR. Local `HEAD`-based commands review that PR only when `headRefOid`
