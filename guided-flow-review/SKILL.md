@@ -333,7 +333,9 @@ Snapshot HEAD before delegation or editing. Afterwards:
    paths and the review TODO are absent; stop if not, without printing the patch.
 4. Inspect the full patch and compare removed and added assertions so coverage
    was not silently traded away.
-5. Run formatting and targeted tests/checks.
+5. Run formatting and targeted tests/checks, then re-run `git status --short`.
+   Commit intended formatter changes to the fix before recording it, and
+   classify any other new path; never record a SHA while its output is dirty.
 6. Run the repository's documented completion gate after a delegated hand-back
    and report test/check counts when available. For direct edits, follow the
    same repository gate policy. Always run the full completion gate at close.
