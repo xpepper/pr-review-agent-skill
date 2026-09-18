@@ -330,7 +330,8 @@ Snapshot HEAD before delegation or editing. Afterwards:
    amendments, or parallel author commits.
 2. Inspect `git show --stat --oneline <sha>`.
 3. Confirm the commit file list equals the intended list and that never-stage
-   paths and the review TODO are absent; stop if not, without printing the patch.
+   paths and the review TODO are absent; if not, stop without printing the
+   patch.
 4. Inspect the full patch and compare removed and added assertions so coverage
    was not silently traded away.
 5. Run formatting and targeted tests/checks, then re-run `git status --short`.
