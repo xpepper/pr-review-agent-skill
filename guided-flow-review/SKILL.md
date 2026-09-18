@@ -134,9 +134,10 @@ If `TODO.md` is a tracked project file or belongs to another purpose, leave it
 untouched and use `GUIDED_REVIEW_TODO.md`. If that path also collides, choose a
 clear repository-root variant and tell the user.
 
-Read [the TODO template](references/todo-template.md), fill its metadata, and
-seed Review progress with the complete proposed review order. Add the chosen
-path to the never-stage list.
+Add the chosen path to the never-stage list now, but create the file only after
+the user agrees the review order (section 4): read
+[the TODO template](references/todo-template.md), fill its metadata, and seed
+Review progress with that agreed order.
 
 Ask before adding the path to `.git/info/exclude`. An exclude protects only
 against accidental staging on this clone; it is not a security boundary. Offer
@@ -175,7 +176,8 @@ registration to justify the order. Keep tightly coupled files in one step when
 reviewing them separately would hide the invariant.
 
 Show the order before Step 1. The first reviewed step must establish why the
-change runs; documentation normally comes last.
+change runs; documentation normally comes last. Once the user agrees the order,
+create or update the review TODO (section 3), then start Step 1.
 
 ## 5. Review one step
 
