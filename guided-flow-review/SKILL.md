@@ -59,11 +59,17 @@ it.
 For a GitHub PR, collect at least:
 
 ```bash
-gh pr view --json number,title,body,baseRefName,headRefName,url
+gh pr view <pr-number-or-url> --json number,title,body,baseRefName,headRefName,headRefOid,url
+git rev-parse HEAD
 git merge-base HEAD <base-ref>
 git log --oneline <base-sha>..HEAD
 git diff --stat <base-sha>...HEAD
 ```
+
+Pass the PR the user named; omit the identifier only when they mean the current
+branch's PR. Local `HEAD`-based commands review that PR only when `headRefOid`
+equals `git rev-parse HEAD`. Otherwise stop and ask the user to check out the
+PR head (or pull the missing commits) before collecting local evidence.
 
 If `gh` is unavailable or no PR exists, continue with local git evidence.
 
