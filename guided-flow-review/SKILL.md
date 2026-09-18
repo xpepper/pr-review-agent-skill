@@ -137,38 +137,43 @@ Read the current files, the relevant base versions, and enough dependencies to
 judge how the change is used. Present dependent-code findings under the current
 step rather than jumping ahead.
 
-Talk it through like a colleague at the keyboard, not a form. A step has three
-beats, in prose, without fixed headings:
-
-- what this file does in the flow and what changed, in a sentence or two;
-- what is good about it, concretely, so the author knows what to keep;
-- the findings, numbered, each with its evidence (`file:line` or a command and
-  its output), why it matters, and the TODO section you recommend. Say plainly
-  when one blocks the merge, and label taste as taste.
-
-For example:
+Give each step labeled parts, so the user can scan straight to the findings or
+the routing without reading a narrative. Keep each part to a sentence or a few
+bullets, and leave out a part that would be empty:
 
 ```markdown
-**Step 2 · `src/routes/orders.ts`** (the HTTP handler the new endpoint hits)
+## Step 2 · `src/routes/orders.ts`
 
-Good: it validates the body with the existing `orderSchema` before touching
-the service, so bad input never reaches the domain layer.
+**Flow role**: the HTTP handler the new endpoint hits.
 
-Two things:
-1. The 404 branch returns `{ error }` while every other route returns
-   `{ message }` (`src/routes/orders.ts:41` vs `src/routes/users.ts:28`), so
-   clients parsing errors will miss it. -> Open
-2. The retry count is hard-coded to 3 (`:57`); taste, but a named constant
-   would read better. -> Refactorings
+**What changed**: adds `POST /orders`, validated with `orderSchema`.
 
-OK with those routes?
+**What looks right**
+- Validates the body before touching the service, so bad input never reaches
+  the domain layer.
+
+**Points to discuss**
+1. **[blocking] Error body shape differs from every other route**
+   - Evidence: `{ error }` at `src/routes/orders.ts:41` vs `{ message }` at
+     `src/routes/users.ts:28`.
+   - Impact: clients parsing error messages will miss this one.
+2. **[nit, taste] Retry count hard-coded to 3** (`:57`); a named constant would
+   read better.
+
+**Proposed routing**
+1. Error body shape -> Open: return `{ message }`.
+2. Retry constant -> Refactorings.
 ```
 
-When a step has findings, end with one question asking the user to confirm or
-override the routes, answerable as `1 Missing tests, 2 drop`. When it has none,
-say what you checked in a line or two, mark it in the TODO, and go straight on
-to the next step. Stopping only when there is something to decide keeps the
-review moving.
+Tag each point `blocking`, `should`, `nit`, or `question for <owner>`, and label
+taste as taste. Each routing row matches the point with the same number and
+names one recommended TODO section.
+
+When a step has points, end with one question asking the user to confirm or
+override the routing, answerable as `1 Open, 2 drop`. When it has none, give
+the Flow role and What looks right, say "No points to discuss", mark it in the
+TODO, and continue to the next step in the same reply: stopping only when there
+is something to decide keeps the review moving.
 
 If the user wants to fix an item right away instead of recording it, record it
 first, then follow [the fix-execution guide](references/fix-execution.md). If
