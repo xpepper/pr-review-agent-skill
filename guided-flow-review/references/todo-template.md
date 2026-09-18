@@ -13,7 +13,6 @@ Pinned comparison: `<SHA endpoints, same .. or ... form; n/a unless range>`
 Pinned base: `<sha or n/a>`
 Starting HEAD: `<sha>`
 Review TODO: `<path>`
-Local exclude: <added by this review | pre-existing | not added>
 Started: <YYYY-MM-DD>
 
 ## Open

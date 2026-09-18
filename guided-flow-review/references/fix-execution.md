@@ -2,22 +2,48 @@
 
 Read this when the user asks to fix a finding, during the review or after it.
 
-## Protect the author's work
+## Prepare before the first fix
 
-Before the first fix, resolve unrelated working-tree changes:
+From the repository instructions, collect the formatting, linting, build, test,
+and completion commands; commit subject and trailer rules; and files that are
+generated or must not be edited. If the repository requires a preflight before
+code changes, run it now, then re-check `git status --short` and attribute any
+newly generated files.
+
+Snapshot the working tree:
+
+```bash
+git status --short
+git diff --name-status
+git diff --cached --name-status
+git stash list
+```
+
+Classify dirty paths by name as part of the reviewed change or unrelated author
+work before printing any patch, and never render credential or environment
+files. Build a **never-stage list**: unrelated dirty or untracked paths, local
+environment and credential files, the review TODO, and anything the repository
+says must not be committed.
+
+Pick the fix baseline by review mode:
+
+- **PR or branch**: commit on the checked-out branch.
+- **Working tree**: edit in place without committing, unless the user
+  establishes a committed baseline or approves committing the whole affected
+  change.
+- **Explicit range**: fix only when the range ends at `HEAD` and the user
+  approves that checkout; otherwise the checkout is not the reviewed code, so
+  leave the item in the TODO.
+
+## Protect the author's work
 
 - Prefer fixing a file that had no pre-existing unrelated modifications.
 - If a target file already contains unrelated author work, ask the user to
-  stash or commit it first, or switch this review to edit-only mode.
-- Forbid `git commit -a`, pathless `git add`, and `git add -A`.
+  stash or commit it first, or keep this fix uncommitted.
+- Forbid `git commit -a`, pathless `git add`, and `git add -A`: each can sweep
+  unrelated author work or the review TODO into a review commit.
 - Stage only explicit intended paths or hunks, always after an end-of-options
   delimiter: `git add -- <path>...` or `git add -p -- <path>`.
-
-In working-tree mode, edit in place without committing by default. Create
-review commits only after the user establishes a committed baseline or
-explicitly approves committing the whole affected change.
-
-In a read-only range review, record an accepted fix under Open and do not edit.
 
 ## Implement one improvement
 
