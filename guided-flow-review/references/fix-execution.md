@@ -72,8 +72,9 @@ the work is separable. Its prompt must include:
 - expected commit subject and active trailer policy;
 - instruction not to push.
 
-Use one writer at a time. While a delegated fix runs, continue only read-only
-review of files it cannot touch. Avoid index-writing or worktree-changing git
+Use one writer at a time: two writers share one index and working tree, so
+their staging and edits interleave. While a delegated fix runs, continue only
+read-only review of files it cannot touch. Avoid index-writing or worktree-changing git
 commands, and never run two fixes concurrently.
 
 ## Verify the hand-back

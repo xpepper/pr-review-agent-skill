@@ -187,8 +187,9 @@ recording it as final.
 - Prove runtime or library-behavior claims with the smallest safe command,
   source lookup, or focused test.
 - Flag conflicting author decisions and resolve the premise before proceeding.
-- Label taste as taste. Drop theoretical concerns that fail loudly and cheaply
-  unless the user values the additional guard.
+- Label taste as taste, so the user can weigh it against evidenced defects.
+  Drop theoretical concerns that fail loudly and cheaply unless the user values
+  the additional guard; they cost review attention without preventing harm.
 
 After routing, update the TODO immediately:
 
