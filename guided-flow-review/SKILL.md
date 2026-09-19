@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires git and an interactive user. Uses gh when reviewing a GitHub PR; otherwise works from a local branch, explicit commit range, or working tree. Optional fixes require the repository's documented validation commands.
 metadata:
   author: Pietro Di Bello
-  version: "0.1.0"
+  version: "0.2.0"
 allowed-tools: Bash
 disable-model-invocation: true
 ---
@@ -33,9 +33,9 @@ and progress survive context loss.
   order.
 - Present evidence before a finding. A suspicion without a `file:line` or a
   command and relevant output is not ready to present.
-- Route every finding exactly once: a TODO section, or drop with a reason. Ask
-  one routing question per step that has findings; move on without stopping
-  when a step has none.
+- Route every finding exactly once: a TODO section, or drop with a reason.
+- End every step with one question and wait: the user, not the agent, decides
+  when a step has been reviewed enough, even when it has no findings.
 - The review is read-only. Change code only when the user asks to fix an item,
   and then follow [the fix-execution guide](references/fix-execution.md).
 - Keep domain questions as questions. Do not turn an unresolved domain premise
@@ -178,9 +178,11 @@ names one recommended TODO section.
 
 When a step has points, end with one question asking the user to confirm or
 override the routing, answerable as `1 Open, 2 drop`. When it has none, give
-the Flow role and What looks right, say "No points to discuss", mark it in the
-TODO, and continue to the next step in the same reply: stopping only when there
-is something to decide keeps the review moving.
+the Flow role and What looks right, say "No points to discuss", and ask whether
+to move on to the next step (name it) or dig deeper into this one. Do not start
+the next step in the same reply: a clean step is the agent's reading, and the
+user may still want to probe it. Mark the step checked in the TODO only once the
+user moves on.
 
 If the user wants to fix an item right away instead of recording it, record it
 first, then follow [the fix-execution guide](references/fix-execution.md). If
