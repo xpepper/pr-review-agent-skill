@@ -18,9 +18,8 @@ goes.
 3. Derives and presents a runtime-flow review order.
 4. Reviews one file or tightly coupled group at a time.
 5. Presents evidenced, weighted findings with a recommended route.
-6. Uses the runtime's native interactive prompts when available, with a
-   portable text fallback, to record, reroute, fix, discuss, or drop each
-   finding.
+6. Uses the runtime's native interaction when available, with a portable text
+   fallback, to collect routing decisions.
 7. Maintains a disposable, resumable review TODO at the repository root.
 8. Closes with a summary and hands the TODO over: address items one by one
    (as focused, verified commits), share it with the team, or turn items into

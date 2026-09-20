@@ -34,8 +34,11 @@ and progress survive context loss.
 - Present evidence before a finding. A suspicion without a `file:line` or a
   command and relevant output is not ready to present.
 - Route every finding exactly once: a TODO section, or drop with a reason.
-- End every step with one question and wait: the user, not the agent, decides
-  when a step has been reviewed enough, even when it has no findings.
+- Whenever user input is required, prefer the runtime's native interactive
+  input mechanism when one is available. Express choices and outcomes without
+  depending on a particular tool or schema; otherwise ask in plain text.
+- End every step with one decision gate and wait: the user, not the agent,
+  decides when a step has been reviewed enough, even when it has no findings.
 - The review is read-only. Approving or overriding a routing records findings in
   the TODO; it is not a request to fix. Change code only when the user
   explicitly asks to fix a specific item, and apply that fix instruction
@@ -180,15 +183,10 @@ Tag each point `blocking`, `should`, `nit`, or `question for <owner>`, and label
 taste as taste. Each routing row matches the point with the same number and
 names one recommended TODO section.
 
-At every decision gate, prefer the runtime's native interactive user-input
-mechanism when one is available. Keep the interaction portable: describe the
-choices and outcomes rather than depending on a particular tool name or schema.
-If no native interaction is available, ask the same question in plain text.
-
-When a step has points, collect one decision per finding in a single
-interaction. Make the proposed route easy to accept, allow the user to override
-it freely, and capture both the routing destination and the action (record vs
-fix now). The plain-text fallback must be answerable as
+When a step has points, collect both the routing destination and the action
+(record vs fix now) for every finding. When the interaction supports separate
+choices, give each finding its own choice and allow a free-form override. The
+plain-text fallback must be answerable as
 `1 Open (record), 2 drop` or
 `1 Open (record), 2 Refactorings (fix now), 3 drop`. When the step has no
 points, give the Flow role and What looks right, say "No points to discuss",
