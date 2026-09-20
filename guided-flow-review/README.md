@@ -79,7 +79,9 @@ the skill uses `GUIDED_REVIEW_TODO.md` instead.
 
 ## Safety properties
 
-- Reviews read-only: code changes only when you ask to fix an item.
+- Reviews read-only: code changes only when you ask to fix an item. Approving
+  a route records it in the TODO rather than editing code; fix requests apply
+  strictly to that item alone.
 - Pins the base SHA or exact comparison so a moving branch does not change the
   review silently.
 - Never copies secret values into review notes or implementation prompts.

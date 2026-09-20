@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires git and an interactive user. Uses gh when reviewing a GitHub PR; otherwise works from a local branch, explicit commit range, or working tree. Optional fixes require the repository's documented validation commands.
 metadata:
   author: Pietro Di Bello
-  version: "0.2.0"
+  version: "0.2.1"
 allowed-tools: Bash
 disable-model-invocation: true
 ---
@@ -36,8 +36,12 @@ and progress survive context loss.
 - Route every finding exactly once: a TODO section, or drop with a reason.
 - End every step with one question and wait: the user, not the agent, decides
   when a step has been reviewed enough, even when it has no findings.
-- The review is read-only. Change code only when the user asks to fix an item,
-  and then follow [the fix-execution guide](references/fix-execution.md).
+- The review is read-only. Approving or overriding a routing records findings in
+  the TODO; it is not a request to fix. Change code only when the user
+  explicitly asks to fix a specific item, and apply that fix instruction
+  strictly to that item alone — never generalize it into a standing
+  fix-as-we-go mode for the rest of the review. When fixing, follow
+  [the fix-execution guide](references/fix-execution.md).
 - Keep domain questions as questions. Do not turn an unresolved domain premise
   into code.
 - Never push, publish a review summary, edit the PR, or create tickets unless
@@ -177,7 +181,9 @@ taste as taste. Each routing row matches the point with the same number and
 names one recommended TODO section.
 
 When a step has points, end with one question asking the user to confirm or
-override the routing, answerable as `1 Open, 2 drop`. When it has none, give
+override both the routing destination and the action (record vs fix now),
+answerable as `1 Open (record), 2 drop` or
+`1 Open (record), 2 Refactorings (fix now), 3 drop`. When it has none, give
 the Flow role and What looks right, say "No points to discuss", and ask whether
 to move on to the next step (name it) or dig deeper into this one. Do not start
 the next step in the same reply: a clean step is the agent's reading, and the
@@ -185,9 +191,16 @@ user may still want to probe it. Mark the step checked in the TODO only once the
 user moves on.
 
 If the user wants to fix an item right away instead of recording it, record it
-first, then follow [the fix-execution guide](references/fix-execution.md). If
-the response is ambiguous, restate the interpreted routing and confirm it before
-recording it as final.
+first, then follow [the fix-execution guide](references/fix-execution.md). An
+instruction to fix applies strictly to that specific item. If the user's
+response is ambiguous between recording and fixing now (such as approving a
+route whose section name implies work, e.g. "ok to add the missing test" or a
+bare "ok"), treat it as approval to record the finding in the TODO, not as
+permission to edit code. Only an explicit instruction to implement immediately
+triggers code changes; when in doubt, confirm whether to record or fix now
+before touching code. If the response is ambiguous about the destination
+section, restate the interpreted routing and confirm it before recording it as
+final.
 
 ### Evidence checks
 

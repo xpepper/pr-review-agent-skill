@@ -1,6 +1,8 @@
 # Executing an accepted fix
 
 Read this when the user asks to fix a finding, during the review or after it.
+A fix request is strictly scoped to the specific requested item; never treat it
+as a standing fix-as-we-go mode for subsequent items or steps.
 
 ## Prepare before the first fix
 
