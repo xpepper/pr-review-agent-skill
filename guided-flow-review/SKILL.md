@@ -180,15 +180,22 @@ Tag each point `blocking`, `should`, `nit`, or `question for <owner>`, and label
 taste as taste. Each routing row matches the point with the same number and
 names one recommended TODO section.
 
-When a step has points, end with one question asking the user to confirm or
-override both the routing destination and the action (record vs fix now),
-answerable as `1 Open (record), 2 drop` or
-`1 Open (record), 2 Refactorings (fix now), 3 drop`. When it has none, give
-the Flow role and What looks right, say "No points to discuss", and ask whether
-to move on to the next step (name it) or dig deeper into this one. Do not start
-the next step in the same reply: a clean step is the agent's reading, and the
-user may still want to probe it. Mark the step checked in the TODO only once the
-user moves on.
+At every decision gate, prefer the runtime's native interactive user-input
+mechanism when one is available. Keep the interaction portable: describe the
+choices and outcomes rather than depending on a particular tool name or schema.
+If no native interaction is available, ask the same question in plain text.
+
+When a step has points, collect one decision per finding in a single
+interaction. Make the proposed route easy to accept, allow the user to override
+it freely, and capture both the routing destination and the action (record vs
+fix now). The plain-text fallback must be answerable as
+`1 Open (record), 2 drop` or
+`1 Open (record), 2 Refactorings (fix now), 3 drop`. When the step has no
+points, give the Flow role and What looks right, say "No points to discuss",
+and offer the choice to move on to the next step (name it) or dig deeper into
+this one. Do not start the next step in the same reply: a clean step is the
+agent's reading, and the user may still want to probe it. Mark the step checked
+in the TODO only once the user moves on.
 
 If the user wants to fix an item right away instead of recording it, record it
 first, then follow [the fix-execution guide](references/fix-execution.md). An
