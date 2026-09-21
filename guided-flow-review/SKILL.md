@@ -133,7 +133,8 @@ steps; unchanged code on the path is context and evidence, not a step.
 1. Find each external trigger (route, handler, CLI command, schedule, message
    consumer, public API) that the change adds or alters, or that reaches
    changed code while itself unchanged. Each trigger starts one flow. Put
-   first the flow for the entry point the change is mainly about.
+   first the flow the user asked to start from, or else the one for the entry
+   point the change is mainly about.
 2. Walk each flow depth-first from its trigger inward: trigger, the wiring and
    configuration it needs, orchestration, domain logic, then adapters,
    persistence, and external clients in the order the core calls them. The
