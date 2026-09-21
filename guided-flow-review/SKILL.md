@@ -143,14 +143,16 @@ steps; unchanged code on the path is context and evidence, not a step.
    that step instead of repeating it.
 4. Place a test right after the code it exercises. Acceptance or end-to-end
    tests open their flow, since they state the behavior from the outside.
-5. After all flows: changed files no trigger reaches (raise each as a point,
+5. After all flows: runtime code no trigger reaches (raise each as a point,
    since it is either dead code or missing wiring), then public library
    surface, dependency manifests, packaging, and generated integration
-   surfaces, then documentation.
+   surfaces, then documentation. Review a deleted file where its former
+   caller sits in a flow, or here if none remains.
 
-Show each proposed step with the edge that reaches it (`called by`,
+Show each runtime step with the edge that reaches it (`called by`,
 `registered in`, `imported by`, with `file:line`), so the user can check the
-order instead of trusting it. Keep tightly coupled files in one step when
+order instead of trusting it. Steps outside the flows give their kind instead
+(docs, manifest, packaging, generated, deleted). Keep tightly coupled files in one step when
 reviewing them separately would hide the invariant.
 
 Show the order before Step 1. The first reviewed step must establish why the
