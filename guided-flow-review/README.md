@@ -17,7 +17,9 @@ goes.
 2. Reads the project's instructions so findings follow its conventions.
 3. Derives and presents a runtime-flow review order.
 4. Reviews one file or tightly coupled group at a time.
-5. Presents evidenced, weighted findings with a recommended route.
+5. Scans for correctness defects, testing gaps, and structural code smells
+   (duplication, deep nesting, bloaters, coupling), presenting evidenced
+   findings with a recommended route.
 6. Uses the runtime's native interaction when available, with a portable text
    fallback, so you can route findings or ask questions before deciding.
 7. Stops after routing each step and waits for you to ask more or explicitly
@@ -41,12 +43,20 @@ target and where to start:
 ```
 
 ```text
+/guided-flow-review --smells PR #42
+```
+
+```text
 /guided-flow-review PR #42, follow the flow from the cronjob through main
 ```
 
 ```text
 /guided-flow-review my current working-tree changes
 ```
+
+Pass `--smells` or `--refactor-focus` to amplify sensitivity to structural
+maintainability issues, surfacing code smells (long functions, deep nesting,
+duplication, naming murkiness) and proposing concrete refactoring moves.
 
 On runtimes that ignore `disable-model-invocation`, the skill falls back to its
 description, which also limits activation to explicit requests that name the
@@ -71,7 +81,7 @@ The skill creates an untracked, disposable `TODO.md` at the repository root. It
 records:
 
 - findings that must be fixed before merge;
-- refactorings and missing tests;
+- refactorings (guided by [the smells and refactoring guide](references/smells-and-refactorings.md)) and missing tests;
 - domain questions and their owners;
 - separate-ticket follow-ups;
 - completed fixes and commit subjects;

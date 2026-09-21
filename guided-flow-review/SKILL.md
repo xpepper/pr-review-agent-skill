@@ -1,11 +1,11 @@
 ---
 name: guided-flow-review
-description: Use only when the user explicitly invokes guided-flow-review (for example /guided-flow-review) to walk through a PR (their own draft or someone else's), branch, commit range, or working-tree change together, file by file in runtime-flow order, discussing what is good and what could improve, and collecting findings into a review TODO. Manual-only; do not start it from context relevance. For existing PR review comments, use pr-review-grill or pr-review-loop instead.
+description: Use only when the user explicitly invokes guided-flow-review (for example /guided-flow-review) to walk through a PR (their own draft or someone else's), branch, commit range, or working-tree change together, file by file in runtime-flow order, examining code smells and refactoring opportunities alongside correctness, and collecting findings into a review TODO. Manual-only; do not start it from context relevance. For existing PR review comments, use pr-review-grill or pr-review-loop instead.
 license: MIT
 compatibility: Requires git and an interactive user. Uses gh when reviewing a GitHub PR; otherwise works from a local branch, explicit commit range, or working tree. Optional fixes require the repository's documented validation commands.
 metadata:
   author: Pietro Di Bello
-  version: "0.3.0"
+  version: "0.4.0"
 allowed-tools: Bash
 disable-model-invocation: true
 ---
@@ -49,6 +49,9 @@ and progress survive context loss.
   [the fix-execution guide](references/fix-execution.md).
 - Keep domain questions as questions. Do not turn an unresolved domain premise
   into code.
+- Maintainability, readability, and structural hygiene are first-class review
+  concerns: actively examine code structure and surface refactoring
+  opportunities with concrete evidence and suggested moves.
 - Never push, publish a review summary, edit the PR, or create tickets unless
   the user asks.
 
@@ -90,8 +93,10 @@ unavailable or no PR exists, continue with local git evidence.
 
 Record the review mode, identifier, branch, comparison, and SHAs (pinned base,
 starting `HEAD`, and for a range both endpoints) in the review TODO; pinning
-keeps the reviewed change stable if a branch moves during a long review. In the
-conversation, state the target in a sentence rather than listing the SHAs.
+keeps the reviewed change stable if a branch moves during a long review. If
+`--smells` or `--refactor-focus` was passed, note this modifier in the review
+mode. In the conversation, state the target in a sentence rather than listing
+the SHAs.
 
 ## 2. Read the project context
 
@@ -173,17 +178,20 @@ bullets, and leave out a part that would be empty:
    - Evidence: `{ error }` at `src/routes/orders.ts:41` vs `{ message }` at
      `src/routes/users.ts:28`.
    - Impact: clients parsing error messages will miss this one.
-2. **[nit, taste] Retry count hard-coded to 3** (`:57`); a named constant would
-   read better.
+2. **[refactor] Deep nesting and duplicate validation in order creation**
+   - Evidence: `src/routes/orders.ts:45-72` has 3 nested `if` blocks; validation
+     logic mirrors `src/routes/quotes.ts:18-35`.
+   - Smell: Deep Nesting + Duplicated Code.
+   - Recommendation: Replace with guard clauses and extract a shared `validateOrderInput` helper.
 
 **Proposed routing**
 1. Error body shape -> Open: return `{ message }`.
-2. Retry constant -> Refactorings.
+2. Order validation refactoring -> Refactorings.
 ```
 
-Tag each point `blocking`, `should`, `nit`, or `question for <owner>`, and label
-taste as taste. Each routing row matches the point with the same number and
-names one recommended TODO section.
+Tag each point `blocking`, `should`, `refactor`, `nit`, or
+`question for <owner>`, and label taste as taste. Each routing row matches the
+point with the same number and names one recommended TODO section.
 
 When a step has points, the decision gate must let the user either route them
 or ask and clarify before deciding. Collect both the routing destination and
@@ -240,8 +248,34 @@ final.
   source lookup, or focused test.
 - Flag conflicting author decisions and resolve the premise before proceeding.
 - Label taste as taste, so the user can weigh it against evidenced defects.
-  Drop theoretical concerns that fail loudly and cheaply unless the user values
-  the additional guard; they cost review attention without preventing harm.
+  Drop theoretical runtime edge cases that fail loudly and cheaply unless the
+  user values the additional guard; they cost review attention without
+  preventing harm. Do not confuse theoretical edge cases with design rot:
+  maintainability, readability, and structural hygiene are never theoretical.
+
+### Code smells and refactoring baseline
+
+Review code structure mercilessly. Do not withhold findings out of politeness or
+assume the author prefers messy code. For every step, actively evaluate the changed
+code and its immediate callers/callees against
+[the smells and refactoring guide](references/smells-and-refactorings.md):
+
+- **Bloaters**: methods exceeding ~25 lines, multi-responsibility classes, files
+  growing beyond a single coherent purpose, long parameter lists (>3-4 params).
+- **Duplication**: copy-pasted logic, near-identical branch blocks, or parallel
+  transformations across hunks.
+- **Cognitive complexity & readability**: nesting deeper than 2-3 levels, confusing
+  compound boolean expressions, missing guard clauses/early returns, mysterious
+  or misleading variable/function names.
+- **Coupling & cohesion**: feature envy (calling methods that reach into another
+  object's state), primitive obsession (raw strings/integers for domain concepts),
+  data clumps traveling together without a type.
+- **Abstractions**: shallow wrappers that pass through calls without adding
+  depth or leverage; speculative generality (unused parameters or hooks).
+
+When the user invokes the skill with `--smells` or asks for a refactoring focus,
+amplify this baseline: surface all structural smells and naming weaknesses even
+when minor, proposing concrete refactoring moves for each.
 
 Questions are conversational state, not TODO items. Do not record an answered
 question unless its answer creates a new finding or decision. If the user asks
