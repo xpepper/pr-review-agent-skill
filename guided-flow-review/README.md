@@ -21,9 +21,10 @@ goes.
 3. Derives and presents an outside-in, top-down review order, one flow at a
    time.
 4. Reviews one file or tightly coupled group at a time.
-5. Scans for correctness defects, testing gaps, and structural code smells
-   (duplication, deep nesting, bloaters, coupling), presenting evidenced
-   findings with a recommended route.
+5. Looks for correctness defects, testing gaps, and code smells the change
+   introduces or worsens, suggesting the one or two refactorings per step with
+   the best payoff (favouring modularity), each with evidence and a recommended
+   route.
 6. Uses the runtime's native interaction when available, with a portable text
    fallback, so you can route findings or ask questions before deciding.
 7. Stops after routing each step and waits for you to ask more or explicitly
@@ -58,9 +59,9 @@ target and where to start:
 /guided-flow-review my current working-tree changes
 ```
 
-Pass `--smells` or `--refactor-focus` to amplify sensitivity to structural
-maintainability issues, surfacing code smells (long functions, deep nesting,
-duplication, naming murkiness) and proposing concrete refactoring moves.
+Pass `--smells` for an exhaustive refactoring pass: the skill lifts its
+one-or-two-per-step limit and also raises minor smells (naming, nesting, long
+functions), each still with evidence and a payoff.
 
 On runtimes that ignore `disable-model-invocation`, the skill falls back to its
 description, which also limits activation to explicit requests that name the

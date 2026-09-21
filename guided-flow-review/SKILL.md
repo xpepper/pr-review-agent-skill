@@ -49,9 +49,9 @@ and progress survive context loss.
   [the fix-execution guide](references/fix-execution.md).
 - Keep domain questions as questions. Do not turn an unresolved domain premise
   into code.
-- Maintainability, readability, and structural hygiene are first-class review
-  concerns: actively examine code structure and surface refactoring
-  opportunities with concrete evidence and suggested moves.
+- Suggesting refactorings is part of the review: when the change introduces or
+  worsens a smell and a concrete refactoring would make the code easier to
+  change, say so, favouring better modularity over local tidiness.
 - Never push, publish a review summary, edit the PR, or create tickets unless
   the user asks.
 
@@ -94,8 +94,7 @@ unavailable or no PR exists, continue with local git evidence.
 Record the review mode, identifier, branch, comparison, and SHAs (pinned base,
 starting `HEAD`, and for a range both endpoints) in the review TODO; pinning
 keeps the reviewed change stable if a branch moves during a long review. If
-`--smells` or `--refactor-focus` was passed, note this modifier in the review
-mode. In the conversation, state the target in a sentence rather than listing
+`--smells` was passed, note it in the review mode. In the conversation, state the target in a sentence rather than listing
 the SHAs.
 
 ## 2. Read the project context
@@ -191,19 +190,24 @@ bullets, and leave out a part that would be empty:
    - Evidence: `{ error }` at `src/routes/orders.ts:41` vs `{ message }` at
      `src/routes/users.ts:28`.
    - Impact: clients parsing error messages will miss this one.
-2. **[refactor] Deep nesting and duplicate validation in order creation**
-   - Evidence: `src/routes/orders.ts:45-72` has 3 nested `if` blocks; validation
-     logic mirrors `src/routes/quotes.ts:18-35`.
-   - Smell: Deep Nesting + Duplicated Code.
-   - Recommendation: Replace with guard clauses and extract a shared `validateOrderInput` helper.
+2. **[should] Possible Duplicated Code: order validation copies the quotes
+   route**
+   - Evidence: `src/routes/orders.ts:45-72` mirrors
+     `src/routes/quotes.ts:18-35`.
+   - Payoff: the next validation rule changes in one place, not two.
+   - Recommendation: extract a shared `validateLineItems` and call it from
+     both routes.
+3. **[nit, taste] Retry count hard-coded to 3** (`:57`); a named constant would
+   read better.
 
 **Proposed routing**
 1. Error body shape -> Open: return `{ message }`.
-2. Order validation refactoring -> Refactorings.
+2. Shared validation -> Refactorings.
+3. Retry constant -> Refactorings.
 ```
 
-Tag each point `blocking`, `should`, `refactor`, `nit`, or
-`question for <owner>`, and label taste as taste. Each routing row matches the
+Tag each point `blocking`, `should`, `nit`, or `question for <owner>`, and
+label taste as taste. Each routing row matches the
 point with the same number and names one recommended TODO section.
 
 When a step has points, the decision gate must let the user either route them
@@ -263,32 +267,30 @@ final.
 - Label taste as taste, so the user can weigh it against evidenced defects.
   Drop theoretical runtime edge cases that fail loudly and cheaply unless the
   user values the additional guard; they cost review attention without
-  preventing harm. Do not confuse theoretical edge cases with design rot:
-  maintainability, readability, and structural hygiene are never theoretical.
+  preventing harm.
 
-### Code smells and refactoring baseline
+### Refactoring opportunities
 
-Review code structure mercilessly. Do not withhold findings out of politeness or
-assume the author prefers messy code. For every step, actively evaluate the changed
-code and its immediate callers/callees against
-[the smells and refactoring guide](references/smells-and-refactorings.md):
+Check the step's changed code against
+[the smells and refactoring guide](references/smells-and-refactorings.md).
+Smells are heuristics, not rules:
 
-- **Bloaters**: methods exceeding ~25 lines, multi-responsibility classes, files
-  growing beyond a single coherent purpose, long parameter lists (>3-4 params).
-- **Duplication**: copy-pasted logic, near-identical branch blocks, or parallel
-  transformations across hunks.
-- **Cognitive complexity & readability**: nesting deeper than 2-3 levels, confusing
-  compound boolean expressions, missing guard clauses/early returns, mysterious
-  or misleading variable/function names.
-- **Coupling & cohesion**: feature envy (calling methods that reach into another
-  object's state), primitive obsession (raw strings/integers for domain concepts),
-  data clumps traveling together without a type.
-- **Abstractions**: shallow wrappers that pass through calls without adding
-  depth or leverage; speculative generality (unused parameters or hooks).
+- Raise a smell the change introduces or makes worse. A smell that was already
+  there belongs in Follow-up, and only when it gets in the way of this change.
+- The project's documented conventions win: do not flag what they endorse or
+  what tooling already enforces.
+- Name the smell as a possibility ("possible Feature Envy") and state the
+  payoff: what becomes easier to change, test, or understand afterwards. A
+  suggestion without a concrete payoff is taste; label it or drop it.
+- Raise at most the one or two highest-leverage refactorings per step,
+  favouring modularity (cohesion, clear responsibilities, how many places a
+  change has to touch) over local tidiness. Fold minor naming or nesting points
+  into a single `nit`.
 
-When the user invokes the skill with `--smells` or asks for a refactoring focus,
-amplify this baseline: surface all structural smells and naming weaknesses even
-when minor, proposing concrete refactoring moves for each.
+When the user passes `--smells`, lift the per-step limit and include minor
+smells, still each with evidence and a payoff.
+
+### Questions and TODO updates
 
 Questions are conversational state, not TODO items. Do not record an answered
 question unless its answer creates a new finding or decision. If the user asks
