@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires git and an interactive user. Uses gh when reviewing a GitHub PR; otherwise works from a local branch, explicit commit range, or working tree. Optional fixes require the repository's documented validation commands.
 metadata:
   author: Pietro Di Bello
-  version: "0.3.0"
+  version: "0.4.0"
 allowed-tools: Bash
 disable-model-invocation: true
 ---
@@ -126,26 +126,39 @@ collision-safe alternative path.
 
 ## 4. Derive the runtime flow
 
-Trace entry points and references to order the changed files:
+Build the order as a traversal from the outside in, not a sort by layer. Trace
+through unchanged code to find the path, but only changed files become review
+steps; unchanged code on the path is context and evidence, not a step.
 
-1. deployment manifests, schedules, routes, handlers, CLI commands, or other
-   external triggers;
-2. process entry point and dependency wiring;
-3. configuration and boundary parsing;
-4. orchestration and core domain/application logic;
-5. adapters, persistence, and external clients as reached by the core flow;
-6. tests beside the behavior they exercise;
-7. public library surface, dependency manifests, packaging, and generated
-   integration surfaces;
-8. documentation.
+1. Find each external trigger (route, handler, CLI command, schedule, message
+   consumer, public API) that the change adds or alters, or that reaches
+   changed code while itself unchanged. Each trigger starts one flow. Put
+   first the flow the user asked to start from, or else the one for the entry
+   point the change is mainly about.
+2. Walk each flow depth-first from its trigger inward: trigger, the wiring and
+   configuration it needs, orchestration, domain logic, then adapters,
+   persistence, and external clients in the order the core calls them. The
+   changed files met along the way, in that order, are the flow's steps.
+   Finish a flow before starting the next.
+3. Review shared code where a flow first reaches it; later flows refer back to
+   that step instead of repeating it.
+4. Place a test right after the code it exercises. Acceptance or end-to-end
+   tests open their flow, since they state the behavior from the outside.
+5. After all flows: runtime code no trigger reaches (raise each as a point,
+   since it is either dead code or missing wiring), then public library
+   surface, dependency manifests, packaging, and generated integration
+   surfaces, then documentation. Review a deleted file where its former
+   caller sits in a flow, or here if none remains.
 
-Use call sites, imports, manifests, dependency direction, and runtime
-registration to justify the order. Keep tightly coupled files in one step when
+Show each runtime step with the edge that reaches it (`called by`,
+`registered in`, `imported by`, with `file:line`), so the user can check the
+order instead of trusting it. Steps outside the flows give their kind instead
+(docs, manifest, packaging, generated, deleted). Keep tightly coupled files in one step when
 reviewing them separately would hide the invariant.
 
 Show the order before Step 1. The first reviewed step must establish why the
-change runs; documentation normally comes last. Once the user agrees the order,
-create or update the review TODO (section 3), then start Step 1.
+change runs. Once the user agrees the order, create or update the review TODO
+(section 3), then start Step 1.
 
 ## 5. Review one step
 
