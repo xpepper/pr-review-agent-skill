@@ -126,15 +126,19 @@ collision-safe alternative path.
 
 ## 4. Derive the runtime flow
 
-Build the order as a traversal from the outside in, not a sort by layer:
+Build the order as a traversal from the outside in, not a sort by layer. Trace
+through unchanged code to find the path, but only changed files become review
+steps; unchanged code on the path is context and evidence, not a step.
 
-1. Find each external trigger the change adds or alters (route, handler, CLI
-   command, schedule, message consumer, public API). Each trigger starts one
-   flow. Put first the flow for the entry point the change is mainly about.
+1. Find each external trigger (route, handler, CLI command, schedule, message
+   consumer, public API) that the change adds or alters, or that reaches
+   changed code while itself unchanged. Each trigger starts one flow. Put
+   first the flow for the entry point the change is mainly about.
 2. Walk each flow depth-first from its trigger inward: trigger, the wiring and
    configuration it needs, orchestration, domain logic, then adapters,
-   persistence, and external clients in the order the core calls them. Finish
-   a flow before starting the next.
+   persistence, and external clients in the order the core calls them. The
+   changed files met along the way, in that order, are the flow's steps.
+   Finish a flow before starting the next.
 3. Review shared code where a flow first reaches it; later flows refer back to
    that step instead of repeating it.
 4. Place a test right after the code it exercises. Acceptance or end-to-end
