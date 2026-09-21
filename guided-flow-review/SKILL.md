@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires git and an interactive user. Uses gh when reviewing a GitHub PR; otherwise works from a local branch, explicit commit range, or working tree. Optional fixes require the repository's documented validation commands.
 metadata:
   author: Pietro Di Bello
-  version: "0.4.0"
+  version: "0.5.0"
 allowed-tools: Bash
 disable-model-invocation: true
 ---
