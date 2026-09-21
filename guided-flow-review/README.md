@@ -5,8 +5,11 @@ request (your own draft or someone else's) or other identifiable change
 together, file by file, and collecting the outcome in a review TODO.
 
 Instead of reading files in diff order, the skill follows the path the software
-actually runs: trigger or entry point, wiring, configuration, core behavior,
-tests, packaging, and documentation. Each step discusses what looks right and
+actually runs, outside in: each flow is walked depth-first from its trigger or
+entry point through wiring, configuration, and core behavior down to adapters,
+with tests beside the code they exercise; unreachable files, packaging, and
+documentation come last. Each proposed step names the call or registration
+that reaches it, so you can check the order. Each step discusses what looks right and
 what could improve, and ends with an explicit decision on where each finding
 goes.
 
@@ -15,7 +18,8 @@ goes.
 1. Identifies and pins the reviewed PR, branch, commit range, or working-tree
    change.
 2. Reads the project's instructions so findings follow its conventions.
-3. Derives and presents a runtime-flow review order.
+3. Derives and presents an outside-in, top-down review order, one flow at a
+   time.
 4. Reviews one file or tightly coupled group at a time.
 5. Scans for correctness defects, testing gaps, and structural code smells
    (duplication, deep nesting, bloaters, coupling), presenting evidenced
