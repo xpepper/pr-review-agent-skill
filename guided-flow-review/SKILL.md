@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires git and an interactive user. Uses gh when reviewing a GitHub PR; otherwise works from a local branch, explicit commit range, or working tree. Optional fixes require the repository's documented validation commands.
 metadata:
   author: Pietro Di Bello
-  version: "0.2.1"
+  version: "0.3.0"
 allowed-tools: Bash
 disable-model-invocation: true
 ---
@@ -37,8 +37,10 @@ and progress survive context loss.
 - Whenever user input is required, prefer the runtime's native interactive
   input mechanism when one is available. Express choices and outcomes without
   depending on a particular tool or schema; otherwise ask in plain text.
-- End every step with one decision gate and wait: the user, not the agent,
-  decides when a step has been reviewed enough, even when it has no findings.
+- End every step with a decision gate that lets the user route findings, ask or
+  clarify something about the current step, or move to the named next step.
+  Wait after the gate: only the user decides when the step has been reviewed
+  enough, whether or not it has findings.
 - The review is read-only. Approving or overriding a routing records findings in
   the TODO; it is not a request to fix. Change code only when the user
   explicitly asks to fix a specific item, and apply that fix instruction
@@ -183,17 +185,29 @@ Tag each point `blocking`, `should`, `nit`, or `question for <owner>`, and label
 taste as taste. Each routing row matches the point with the same number and
 names one recommended TODO section.
 
-When a step has points, collect both the routing destination and the action
-(record vs fix now) for every finding. When the interaction supports separate
-choices, give each finding its own choice and allow a free-form override. The
-plain-text fallback must be answerable as
-`1 Open (record), 2 drop` or
-`1 Open (record), 2 Refactorings (fix now), 3 drop`. When the step has no
-points, give the Flow role and What looks right, say "No points to discuss",
-and offer the choice to move on to the next step (name it) or dig deeper into
-this one. Do not start the next step in the same reply: a clean step is the
-agent's reading, and the user may still want to probe it. Mark the step checked
-in the TODO only once the user moves on.
+When a step has points, the decision gate must let the user either route them
+or ask and clarify before deciding. Collect both the routing destination and
+the action (record vs fix now) for every finding only when the user is ready.
+When the interaction supports separate choices, give each finding its own
+choice, allow a free-form override, and include an explicit way to ask about the
+step. The plain-text fallback must be answerable as
+`1 Open (record), 2 drop`,
+`1 Open (record), 2 Refactorings (fix now), 3 drop`, or
+`question: why does point 1 fail at runtime?`.
+
+If the user declines or postpones routing to clarify a point, answer the
+question first. Restate the evidence and the competing interpretations when
+useful; use the smallest safe command or `file:line` evidence needed to resolve
+it. A question is not approval to route or fix anything. Once the user has the
+answer, re-offer the unresolved routing rather than advancing.
+
+After all points are routed, update the TODO immediately, summarize the recorded
+outcomes, and offer the choice to ask something else about this step or move on
+to the next step (name it). When the step has no points, give the Flow role and
+What looks right, say "No points to discuss", and offer the same choice. Never
+start the next step in the same reply as the step-close gate: the user may still
+want to understand the code after accepting the routing. Mark the step checked
+in the TODO only once the user explicitly moves on.
 
 If the user wants to fix an item right away instead of recording it, record it
 first, then follow [the fix-execution guide](references/fix-execution.md). An
@@ -228,6 +242,11 @@ final.
 - Label taste as taste, so the user can weigh it against evidenced defects.
   Drop theoretical concerns that fail loudly and cheaply unless the user values
   the additional guard; they cost review attention without preventing harm.
+
+Questions are conversational state, not TODO items. Do not record an answered
+question unless its answer creates a new finding or decision. If the user asks
+about an already-closed step, answer in place, update the TODO only for any new
+finding, then return to the step where the review was paused and name it.
 
 After routing, update the TODO immediately:
 

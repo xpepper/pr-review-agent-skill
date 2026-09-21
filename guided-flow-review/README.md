@@ -19,9 +19,11 @@ goes.
 4. Reviews one file or tightly coupled group at a time.
 5. Presents evidenced, weighted findings with a recommended route.
 6. Uses the runtime's native interaction when available, with a portable text
-   fallback, to collect routing decisions.
-7. Maintains a disposable, resumable review TODO at the repository root.
-8. Closes with a summary and hands the TODO over: address items one by one
+   fallback, so you can route findings or ask questions before deciding.
+7. Stops after routing each step and waits for you to ask more or explicitly
+   move to the named next step.
+8. Maintains a disposable, resumable review TODO at the repository root.
+9. Closes with a summary and hands the TODO over: address items one by one
    (as focused, verified commits), share it with the team, or turn items into
    tickets. Fixing is opt-in.
 
