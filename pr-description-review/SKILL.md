@@ -154,7 +154,7 @@ Omit `Likely reviewer misreads` or `Author confirmations needed` when empty.
 
 ## Drafting Guidance
 
-A human reads the description top to bottom and may stop at any line. Put what they need first, make the rest easy to skim, and cut everything else. Make the description clearer, not longer.
+A human reads the description top to bottom and may stop at any line. Put what they need first, make the rest easy to skim, and cut everything else. Close the material gaps first; after that, prefer clearer over longer.
 
 ### Shape
 
