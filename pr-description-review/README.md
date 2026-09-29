@@ -43,6 +43,8 @@ The skill is read-only. It never publishes or edits the pull request.
 - Deliberate non-goals, accepted manual processes, and pre-existing limitations.
 - What tests and mocks prove, and what remains unverified.
 - Where reviewer attention is most valuable.
+- Readability: whether the opening lines say what changes, why, and what to
+  watch, and whether the rest is skimmable rather than a wall of text.
 
 It evaluates only properties relevant to the change. Small local changes are
 not forced into a distributed-systems template.
@@ -66,7 +68,10 @@ The result includes:
 1. A `Ready`, `Needs context`, or `Misleading` verdict.
 2. A table showing which reviewer-context properties are present or missing.
 3. Likely reviewer misreads caused by hidden context, when applicable.
-4. A complete improved PR-description draft.
+4. A complete improved PR-description draft, written for a human reading top
+   to bottom: a short plain-language opening, then only the sections the
+   change needs, most important first. It cuts diff narration and filler, and
+   keeps the author's voice so they can stand behind every claim.
 5. A short list of author confirmations needed before publishing, when
    material facts remain unknown.
 
