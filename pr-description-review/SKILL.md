@@ -160,8 +160,8 @@ A human reads the description top to bottom and may stop at any line. Put what t
 
 - Open with one to three plain sentences, no heading: what changes, why, and the one thing a reviewer must know before reading the diff (a risk, a prerequisite, where to look). A reviewer who stops there should know what they are approving.
 - Follow with short labeled sections only for the properties this change needs (per the proportionality rule), ordered by what the reviewer needs soonest. A small change may need nothing beyond the opening lines and one line on verification.
-- Prefer bullets and short paragraphs of three or four lines at most. Include a compact flow such as `Frontend -> API -> provider` when it removes ambiguity.
-- Aim for about one screen. Move supporting detail behind links or into a collapsed `<details>` block instead of inlining it.
+- Prefer bullets and short paragraphs of at most three sentences, one idea per sentence. Include a compact flow such as `Frontend -> API -> provider` when it removes ambiguity.
+- Treat about one screen as a rough target, not a measured limit; closing material gaps comes first. Move supporting detail behind links or into a collapsed `<details>` block instead of inlining it.
 
 ### Content
 
@@ -186,6 +186,6 @@ Before returning the draft, confirm that:
 
 - every property under Review Properties is either satisfied by the draft or explicitly marked `Not applicable`, with none silently skipped;
 - the opening lines stand alone: a reviewer who stops there knows what changes, why, and what to watch;
-- no section narrates the diff or repeats another, and no paragraph runs past four lines;
+- no section narrates the diff or repeats another, and no paragraph runs past three sentences;
 - nothing on the `Never invent` list in Evidence Calibration was added;
 - every unknown that materially affects review carries a `[confirm: ...]` placeholder and appears under `Author confirmations needed`.
