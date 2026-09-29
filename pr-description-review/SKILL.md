@@ -1,6 +1,6 @@
 ---
 name: pr-description-review
-description: Use when reviewing or improving a pull request description so reviewers receive the system context needed for focused, evidence-based feedback. Accepts a GitHub PR URL or number, the PR for the current branch, or pasted description text, and produces a context-gap review plus an improved draft without editing the PR.
+description: Use when reviewing or improving a pull request description so reviewers receive the system context needed for focused, evidence-based feedback. Accepts a GitHub PR URL or number, the PR for the current branch, or pasted description text, and produces a context-gap review plus a concise, top-first improved draft without editing the PR.
 license: MIT
 compatibility: Requires git and gh for repository or GitHub PR inputs. Pasted descriptions can be reviewed without them.
 metadata:
@@ -83,6 +83,14 @@ Proportionality rule, authoritative for both the review and the draft: scale the
 - Identify areas where feedback is especially valuable.
 - Do not ask reviewers to ignore legitimate findings; provide context that helps them calibrate severity and confidence.
 
+### Readability
+
+Always applicable when a description exists.
+
+- The opening lines tell a reviewer what changes, why, and what needs their attention.
+- The most review-critical information comes first; detail follows in order of need.
+- No wall of text, diff narration, or filler that makes the reviewer dig for the point.
+
 ## Evidence Calibration
 
 Classify important statements in the proposed description:
@@ -108,8 +116,8 @@ Never invent (authoritative list; the rules below refer back to it):
 2. Compare the description with the actual change when a diff is available.
 3. Score each relevant property as `Present`, `Partial`, `Missing`, or `Not applicable`.
 4. Explain how each material gap could cause a reviewer to misread the change.
-5. Draft the smallest improved description that closes the material gaps.
-6. Preserve useful existing text, ticket links, formatting, and verified claims.
+5. Draft the smallest improved description that closes the material gaps, shaped per Drafting Guidance. Closing gaps is not a license to grow: cut noise as you add context.
+6. Preserve useful existing text, ticket links, and verified claims; reorder or trim them when that serves the reader.
 7. Rather than fabricating a missing detail, use a concise placeholder, as required by the `Never invent` list in Evidence Calibration.
 
 ## Output Format
@@ -146,17 +154,38 @@ Omit `Likely reviewer misreads` or `Author confirmations needed` when empty.
 
 ## Drafting Guidance
 
-- Keep the draft proportional, per the proportionality rule under Review Properties.
+A human reads the description top to bottom and may stop at any line. Put what they need first, make the rest easy to skim, and cut everything else. Close the material gaps first; after that, prefer clearer over longer.
+
+### Shape
+
+- Open with one to three plain sentences, no heading: what changes, why, and the one thing a reviewer must know before reading the diff (a risk, a prerequisite, where to look). A reviewer who stops there should know what they are approving.
+- Follow with short labeled sections only for the properties this change needs (per the proportionality rule), ordered by what the reviewer needs soonest. A small change may need nothing beyond the opening lines and one line on verification.
+- Prefer bullets and short paragraphs of at most three sentences, one idea per sentence. Include a compact flow such as `Frontend -> API -> provider` when it removes ambiguity.
+- Treat about one screen as a rough target, not a measured limit; closing material gaps comes first. Move supporting detail behind links or into a collapsed `<details>` block instead of inlining it.
+
+### Content
+
+- Every sentence must earn its place: if a reviewer would not miss it, cut it. The improved draft is often shorter than the original.
+- Do not narrate the diff. Skip file-by-file changelogs and restatements of the title; say what the diff cannot show: intent, contracts, trade-offs, and remaining risk.
+- Cut filler: preambles ("This PR introduces..."), generic benefits ("improves maintainability"), stacked hedges, and closing recaps.
 - Prefer links and short invariant statements over long explanations.
-- Include a compact flow such as `Frontend -> API -> provider` when it removes ambiguity.
 - Make rollout facts explicit rather than asking reviewers to infer chronology from linked PRs.
 - Name manual but accepted processes without apologizing for them.
 - Preserve uncertainty honestly. A focused question is better than a confident invented explanation.
+
+### Voice
+
+The author publishes the draft under their name, so it must read as theirs and hold only claims they can explain and defend in review.
+
+- Write the way the author would explain the change to a teammate: direct, specific, plain words. Keep the author's own clear phrasing instead of polishing it into generic prose.
+- Surface the author's judgment (why this approach, what they are unsure about) rather than generic reasoning a reviewer could generate themselves.
 
 ## Completion Check
 
 Before returning the draft, confirm that:
 
 - every property under Review Properties is either satisfied by the draft or explicitly marked `Not applicable`, with none silently skipped;
+- the opening lines stand alone: a reviewer who stops there knows what changes, why, and what to watch;
+- no section narrates the diff or repeats another, and no paragraph runs past three sentences;
 - nothing on the `Never invent` list in Evidence Calibration was added;
 - every unknown that materially affects review carries a `[confirm: ...]` placeholder and appears under `Author confirmations needed`.
