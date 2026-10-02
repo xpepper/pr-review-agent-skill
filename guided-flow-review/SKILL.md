@@ -37,6 +37,9 @@ and progress survive context loss.
 - Whenever user input is required, prefer the runtime's native interactive
   input mechanism when one is available. Express choices and outcomes without
   depending on a particular tool or schema; otherwise ask in plain text.
+  Text written before an interactive prompt may not be shown to the user, so
+  put everything they need to decide (the review order, the step's points and
+  proposed routing) inside the prompt's own message, not only in chat.
 - End every step with a decision gate that lets the user route findings, ask or
   clarify something about the current step, or move to the named next step.
   Wait after the gate: only the user decides when the step has been reviewed
@@ -160,8 +163,9 @@ order instead of trusting it. Steps outside the flows give their kind instead
 (docs, manifest, packaging, generated, deleted). Keep tightly coupled files in one step when
 reviewing them separately would hide the invariant.
 
-Show the order before Step 1. The first reviewed step must establish why the
-change runs. Once the user agrees the order, create or update the review TODO
+Show the order before Step 1. When asking the user to agree it through an
+interactive prompt, include the full order in that prompt's message. The first
+reviewed step must establish why the change runs. Once the user agrees the order, create or update the review TODO
 (section 3), then start Step 1.
 
 ## 5. Review one step
@@ -211,7 +215,9 @@ label taste as taste. Each routing row matches the
 point with the same number and names one recommended TODO section.
 
 When a step has points, the decision gate must let the user either route them
-or ask and clarify before deciding. Collect both the routing destination and
+or ask and clarify before deciding. An interactive gate must restate each
+point (number, tag, one-line summary) and its proposed routing in its own
+message. Collect both the routing destination and
 the action (record vs fix now) for every finding only when the user is ready.
 When the interaction supports separate choices, give each finding its own
 choice, allow a free-form override, and include an explicit way to ask about the
