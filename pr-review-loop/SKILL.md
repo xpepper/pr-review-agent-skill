@@ -145,6 +145,13 @@ Present a compact table, one row per unresolved comment:
 
 The rationale is where feedback is challenged rather than blindly accepted: show each comment as accepted, adapted, or pushed back on, with a reason tied to the project's conventions. The shared goal is the highest-quality merge — hold the feedback in high regard, but do not implement a suggestion that conflicts with the project's established conventions without saying so here.
 
+**Delivery — the user must actually see the table.** Text written earlier in the same turn is not reliably visible once an interactive prompt appears (e.g. an `ask_user` form), so never present the table only as preamble text before such a call. Instead:
+
+- Use the best interactive question tool your harness provides: `ask_user` (GitHub Copilot CLI), `AskUserQuestion` (Claude Code), `request_user_input` / equivalent (Codex and others). If unsure, check your available tools for one that asks the user a question and waits. Put the **full triage table inside that tool's message/question body**, followed by the approval question (options such as "Approve as-is", "Adjust classifications"). Never call the tool with only a bare "approve the triage?" question; the table must be in the same payload. Do not rely on a separate text block before the call.
+- Self-check before calling: does the question body contain every row of the table? If not, add it.
+- If no such tool exists, make the table the **final output of the turn**, with no further tool calls after it, then wait for the user's reply.
+- If the user says they cannot see the triage, re-print the full table as the final output of the turn (no tool call after it) before asking anything else.
+
 The user may:
 - **Approve as-is** ("go ahead", "looks good") — proceed to Step 6.
 - **Adjust classifications** ("treat #3 as PARK", "#5 is OUT_OF_SCOPE — convention is X"). Apply the overrides. If the changes are substantial, re-present the updated triage; otherwise proceed.
