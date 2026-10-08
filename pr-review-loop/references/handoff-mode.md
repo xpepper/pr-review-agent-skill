@@ -258,10 +258,10 @@ Use this scope when no handoff exists.
    approval.
 9. Write the provisional handoff with `Status: awaiting-approval` before
    presenting the triage.
-10. Present the compact triage table and wait for explicit approval. Deliver
-    the table as in normal mode (SKILL.md Step 5, "Delivery"): as the final
-    output of the turn, rendered as markdown, never inside an interactive
-    question tool.
+10. Present the compact triage table and wait for explicit approval, as in
+    normal mode (SKILL.md Step 5, "Delivery"): the table as rendered markdown
+    in chat, then one self-contained question per row in the interactive
+    question tool, or a plain-text reply when there is none.
 11. Apply user overrides, record approval in the handoff, set approved items to
     `pending`, set `Status: ready`, and stop.
 

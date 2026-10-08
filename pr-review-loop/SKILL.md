@@ -139,21 +139,27 @@ After classifying every comment, present the full triage to the user and wait fo
 
 Present a compact table, one row per unresolved comment:
 
-| Ref | Class | Rationale |
-|-----|-------|-----------|
-| @author `file:line` (review thread) or short excerpt (issue comment) | MUST_FIX / SHOULD_FIX / PARK / OUT_OF_SCOPE / NEEDS_CLARIFICATION | one line, grounded in the codebase conventions / agent guidelines found in Step 1 |
+| # | Ref | Class | Rationale |
+|---|-----|-------|-----------|
+| 1 | @author `file:line` (review thread) or short excerpt (issue comment) | MUST_FIX / SHOULD_FIX / PARK / OUT_OF_SCOPE / NEEDS_CLARIFICATION | one line, grounded in the codebase conventions / agent guidelines found in Step 1 |
 
 The rationale is where feedback is challenged rather than blindly accepted: show each comment as accepted, adapted, or pushed back on, with a reason tied to the project's conventions. The shared goal is the highest-quality merge — hold the feedback in high regard, but do not implement a suggestion that conflicts with the project's established conventions without saying so here.
 
-**Delivery — the user must actually see the table.** Make the full triage table the **final output of the turn**, rendered as markdown, with no tool call after it. End with one line: "Reply *go* to approve, or name the rows to change." Then wait for the user's reply in chat.
+**Delivery — overview first, then one decision per row.**
 
-Never put the table inside an interactive question tool (`AskUserQuestion`, `ask_user`, `request_user_input`, …): some render their body as plain text (Claude Code does), so the table comes out as raw pipes. Text written before such a call can also be hidden by the prompt, which is why the table goes last, in plain chat output.
+1. **Overview.** Print the full triage table as rendered markdown in chat.
+2. **Decisions.** If the harness has an interactive question tool (`AskUserQuestion` in Claude Code, `ask_user` in GitHub Copilot CLI, `request_user_input` or equivalent elsewhere), ask **one question per row**, MUST_FIX rows first, using as many calls as the tool's per-call limit requires. Never put the table itself in the tool: some render their body as plain text, so a table comes out as raw pipes. Text printed before the prompt may be hidden while it is open, so each question must stand on its own:
+   - **Label:** the row number and a short ref, e.g. `#3 api.rs`.
+   - **Question:** reviewer, location, a one-line gist of the comment, the proposed class and its rationale.
+   - **Options:** the proposed class first, marked as recommended, then the two or three most plausible alternatives. The tool's free-text answer is how the user discusses a row or picks a class not listed.
+3. **No question tool:** end the turn with the table and one line: "Reply *go* to approve, or name the rows to change." Then wait for the user's reply in chat.
 
-The user may:
-- **Approve as-is** ("go ahead", "looks good") — proceed to Step 6.
-- **Adjust classifications** ("treat #3 as PARK", "#5 is OUT_OF_SCOPE — convention is X"). Apply the overrides. If the changes are substantial, re-present the updated triage; otherwise proceed.
+For each row the user may:
+- **Approve** the proposed class.
+- **Override** it with another class ("#5 is OUT_OF_SCOPE, convention is X"). Apply the override.
+- **Discuss** it: a free-text answer that is a question or an objection rather than a class. Answer it, then re-ask **only that row**.
 
-Only after explicit approval, move on to Step 6.
+Only when every row has an approved class, move on to Step 6. If the overrides changed the triage substantially, re-print the updated table first.
 
 ### Step 6 — Process ONE comment at a time
 
