@@ -148,11 +148,14 @@ The rationale is where feedback is challenged rather than blindly accepted: show
 **Delivery — overview first, then one decision per row.**
 
 1. **Overview.** Print the full triage table as rendered markdown in chat.
-2. **Decisions.** If the harness has an interactive question tool (`AskUserQuestion` in Claude Code, `ask_user` in GitHub Copilot CLI, `request_user_input` or equivalent elsewhere), ask **one question per row**, MUST_FIX rows first, using as many calls as the tool's per-call limit requires. Never put the table itself in the tool: some render their body as plain text, so a table comes out as raw pipes. Text printed before the prompt may be hidden while it is open, so each question must stand on its own:
+2. **Decisions.** If the harness has an interactive question tool (`AskUserQuestion` in Claude Code, `ask_user` in GitHub Copilot CLI, `request_user_input` or equivalent elsewhere), ask **one question (or form field) per row**, all rows of a batch in a single call. Put MUST_FIX rows first, and use more calls only when the tool's per-call limit requires it (Claude Code: 4 questions). Text printed before the call may never be shown (Copilot CLI can fold it into the collapsed thinking block), and these tools render plain text, so each question must stand on its own, written in plain sentences with no table, pipes, bold, or backticks:
    - **Label:** the row number and a short ref, e.g. `#3 api.rs`.
    - **Question:** reviewer, location, a one-line gist of the comment, the proposed class and its rationale.
-   - **Options:** the proposed class first, marked as recommended, then the two or three most plausible alternatives. The tool's free-text answer is how the user discusses a row or picks a class not listed.
+   - **Options:** the proposed class, marked as recommended the way the tool supports it (first option labelled "(Recommended)", or the field's default), then the two or three most plausible alternatives. Do not add an "Other" or "Discuss" option: the tool's own free-text answer is how the user discusses a row or picks a class not listed.
+   - **Shared message:** if the tool has one (Copilot's form `message`), put a plain one-line-per-row overview there.
 3. **No question tool:** end the turn with the table and one line: "Reply *go* to approve, or name the rows to change." Then wait for the user's reply in chat.
+
+A cancelled, declined, or empty prompt is **not** approval, even if the tool says to proceed with defaults. Re-print the table as the final output of the turn and wait for the user in chat.
 
 For each row the user may:
 - **Approve** the proposed class.
