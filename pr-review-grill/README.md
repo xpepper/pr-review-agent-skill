@@ -11,8 +11,10 @@ request review feedback collaboratively, one comment at a time.
 4. Grills the premise with the user until the classification and action are
    explicit.
 5. Persists every decision in `.pr-review/triage.json`.
-6. Processes approved fixes one at a time with safeguards, focused commits,
-   replies, and resolution.
+6. Processes fixes one at a time with safeguards, focused commits, replies,
+   and resolution: either all together after a final approval (`batch`, the
+   default) or each right after its decision (`apply-as-decided`), optionally
+   holding a commit for your review before it is pushed.
 7. Reports parked, rejected, and clarification items without silently changing
    them.
 

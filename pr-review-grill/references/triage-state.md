@@ -9,6 +9,7 @@ Example:
 {
   "version": 1,
   "phase": "discussion",
+  "mode": "batch",
   "pr": {
     "owner": "org",
     "repo": "repository",
@@ -41,6 +42,11 @@ Example:
 ```
 
 ## Allowed values
+
+`mode`:
+
+- `batch`
+- `apply-as-decided`
 
 `phase`:
 
@@ -76,7 +82,8 @@ After a remote action, add verification fields such as:
   "reply_id": 987654,
   "reply_verified": true,
   "thread_resolved": true,
-  "commit": "abc1234"
+  "commit": "abc1234",
+  "pushed": true
 }
 ```
 

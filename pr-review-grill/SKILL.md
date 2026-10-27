@@ -1,11 +1,11 @@
 ---
 name: pr-review-grill
-description: Use when addressing open pull-request review comments and the user wants to discuss, challenge, and decide each comment one at a time before any code changes. Trigger for requests to grill review feedback, walk through comments individually, debate whether comments are valid, or work through PR feedback collaboratively. Do not use this skill for fast batch triage; use pr-review-loop instead.
+description: Use when addressing open pull-request review comments and the user wants to discuss, challenge, and decide each comment one at a time, applying the decisions in one batch at the end or as each one is made. Trigger for requests to grill review feedback, walk through comments individually, debate whether comments are valid, or work through PR feedback collaboratively. Do not use this skill for fast batch triage; use pr-review-loop instead.
 license: MIT
 compatibility: Requires gh CLI or another GitHub client, jq, and the PR branch checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "0.1.0"
+  version: "0.2.0"
 allowed-tools: Bash
 ---
 
@@ -32,8 +32,11 @@ scope are first-class evidence and must update the assessment.
   acknowledgments.
 - Discuss exactly one comment or confirmed cascade at a time.
 - Persist the decision immediately after each discussion.
-- Do not edit code, create plans, reply, resolve, commit, or push until every
-  feedback item has a recorded decision and the user gives final approval.
+- Act only on recorded decisions. In `batch` mode (the default), edit code,
+  create plans, reply, resolve, commit, and push only after every feedback item
+  has a recorded decision and the user gives final approval. In
+  `apply-as-decided` mode, process each item right after its decision is
+  recorded. See [Processing mode](#processing-mode).
 - Never turn an unresolved premise into a silent assumption. State the premise,
   show the evidence, and invite correction.
 - Never use `git reset --hard`, `git checkout --`, or other destructive commands.
@@ -58,6 +61,7 @@ Write state after:
 - selecting the current item;
 - every user correction;
 - every classification or action decision;
+- every processing-mode choice or switch;
 - final triage approval;
 - every commit, reply, and resolution.
 
@@ -150,7 +154,30 @@ Order the queue as:
 This is an initial discussion order, not a pre-classification. The user may
 change it.
 
+#### Processing mode
+
+Before the first evidence card, ask the user once which mode to use and record
+it as `mode` in the ledger:
+
+- `batch` (default): discuss and decide every item, get final approval
+  (step 7), then process everything (step 8).
+- `apply-as-decided`: after each decision is recorded, process that item
+  immediately (step 8 for that item only), then present the next card.
+
+The user may switch mode at any point, for example "apply the decisions so far
+right away". Record the switch, process every decided but unprocessed item, and
+continue in the new mode.
+
+In `apply-as-decided` mode the user may also **hold** an item: commit it
+locally, then stop and wait for their review before pushing, replying, or
+resolving. Record `pushed: false` until they release it.
+
 ### 5. Grill one item at a time
+
+Before each evidence card, re-fetch unresolved review threads and issue
+comments (one GraphQL call) and diff them against the ledger. Append any new
+item to the queue, mark it `(new)` in its card header, and update `<total>`.
+Feedback often arrives while the grill is running.
 
 For the current item, present an evidence card and then stop for the user's
 response. Do not show a batch triage table before the individual discussions.
@@ -232,12 +259,23 @@ Do not use `NEEDS_CLARIFICATION` merely to avoid difficult work. Use it only
 when choosing an interpretation without the reviewer's answer risks a
 meaningfully different change.
 
-After recording a decision, show a one-line confirmation and move to the next
+After recording a decision, show a one-line confirmation. In
+`apply-as-decided` mode, process the item now (step 8), then move to the next
 item. Repeat the evidence-card discussion for every unresolved item.
+
+A later decision can settle an earlier parked or clarification item, for
+example when a new comment proposes the fix the parked thread was waiting for.
+Treat the two as one cascade: reopen the earlier entry, record the shared
+decision on both, and reply on both threads.
 
 ### 7. Final triage approval
 
-When every item has a decision, present the completed ledger in a compact table.
+In `apply-as-decided` mode, nothing is left to approve: show the completed
+ledger as a recap, release any held items the user approves, and continue at
+step 9.
+
+In `batch` mode, when every item has a decision, present the completed ledger
+in a compact table.
 Include any user overrides and confirmed cascades.
 
 Stop and ask for explicit approval before processing. Until approval:
@@ -253,9 +291,11 @@ affected entry unless the change alters the overall processing order.
 
 ### 8. Process approved decisions
 
-Process `MUST_FIX` first, then `SHOULD_FIX`. Process cascades atomically, with
-one focused commit per cascade. `PARK`, `OUT_OF_SCOPE`, and
-`NEEDS_CLARIFICATION` items follow the action recorded during discussion.
+In `batch` mode, process `MUST_FIX` first, then `SHOULD_FIX`. In
+`apply-as-decided` mode, process in discussion order, one item per decision.
+Either way, process cascades atomically, with one focused commit per cascade.
+`PARK`, `OUT_OF_SCOPE`, and `NEEDS_CLARIFICATION` items follow the action
+recorded during discussion.
 
 #### Fixes
 
@@ -269,7 +309,7 @@ For each fix:
 4. Run the safeguards again and fix regressions before continuing.
 5. Commit one focused change with a Conventional Commit subject and a body
    naming the reviewer.
-6. Push the commit.
+6. Push the commit, unless the user is holding the item for review.
 7. Reply to the original comment, explaining what changed, any adaptation, and
    the commit.
 8. Verify the posted reply with a GET using the response ID. Never re-POST to
@@ -339,8 +379,9 @@ Post one final PR comment using a body file:
 - Updated the body to reflect <scope change>
 ```
 
-Omit empty sections. Verify the posted summary with `gh pr view <pr-number>
---comments`, then update the ledger to `complete`.
+Omit empty sections. Re-fetch feedback once more before posting; any new
+unresolved item goes back to step 5 first. Verify the posted summary with
+`gh pr view <pr-number> --comments`, then update the ledger to `complete`.
 
 ## Resume behavior
 
@@ -352,9 +393,11 @@ On a fresh invocation:
 4. Verify any prior commit, reply, resolution, and summary remotely.
 5. If an item is `discussing`, resume that item rather than silently skipping
    it.
-6. If all items are decided but final approval is missing, show the ledger and
-   ask for approval again.
-7. If processing is in progress, continue at the first unverified action.
+6. If all items are decided but final approval is missing in `batch` mode,
+   show the ledger and ask for approval again.
+7. If an item is held (`pushed: false`), show its local commit and ask whether
+   to release it.
+8. If processing is in progress, continue at the first unverified action.
 
 Never infer that a remote write succeeded from a local command timeout. Re-fetch
 the remote object before retrying, because repeating a POST can create duplicate
@@ -363,7 +406,8 @@ replies or summaries.
 ## Do not
 
 - Batch-triage all comments before discussing the first one.
-- Start implementation before the final triage approval.
+- Start implementation before the final triage approval in `batch` mode, or
+  before the item's decision is recorded in `apply-as-decided` mode.
 - Treat bot authorship as a reason to ignore substantive feedback.
 - Continue debating after the user has given a clear, recorded decision.
 - Bundle unrelated feedback into one commit.
