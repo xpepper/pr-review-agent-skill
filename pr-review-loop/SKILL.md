@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI or any other tool to interact with GitHub. PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.6.0"
+  version: "1.7.0"
 allowed-tools: Bash
 ---
 
@@ -58,6 +58,20 @@ Inspect the project for safeguard conventions by checking these files (if they e
 
 Identify all required safeguards (tests, compilation, linting, formatting, etc.).
 Run all of them. If any fail, stop immediately and report — do not proceed on a broken baseline.
+
+**Offer to skip the baseline when CI is already green.** Before running the safeguards, check:
+
+```bash
+gh pr view --json headRefOid,statusCheckRollup --jq '{head: .headRefOid, checks: (.statusCheckRollup | length), green: ((.statusCheckRollup | length) > 0 and all(.statusCheckRollup[]; (.conclusion // .state) as $r | ($r == "SUCCESS" or $r == "NEUTRAL" or $r == "SKIPPED")))}'
+git rev-parse HEAD
+git status --porcelain
+```
+
+Offer the skip only when all of these hold: `green` is `true`, `head` equals local `HEAD`, and the worktree is clean. A pending, failed, or cancelled check, a missing PR, or a different commit means no offer: run the baseline as above.
+
+When the conditions hold, ask the user one yes/no question before running anything (use the harness question tool if there is one, as in Step 5). State the commit and number of passing checks, and name any safeguard found above that `.github/workflows/` does not appear to run. Offer "Skip the baseline (Recommended)" first and "Run the baseline" second. Never skip without the user's answer.
+
+Skipping replaces only this upfront run. The per-fix safeguard runs in Step 6b and 6d still apply.
 
 ### Step 2 — Get Current PR Number and Basic Info
 
