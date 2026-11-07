@@ -5,7 +5,8 @@ request review feedback collaboratively, one comment at a time.
 
 ## What it does
 
-1. Discovers repository safeguards and confirms a healthy baseline.
+1. Discovers repository safeguards and confirms a healthy baseline, or offers
+   to skip that run when CI is already green on the checked-out commit.
 2. Collects unresolved inline and top-level PR feedback.
 3. Presents one comment with codebase evidence and a provisional assessment.
 4. Grills the premise with the user until the classification and action are

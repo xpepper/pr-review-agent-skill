@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI or another GitHub client, jq, and the PR branch checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "0.2.0"
+  version: "0.3.0"
 allowed-tools: Bash
 ---
 
@@ -86,6 +86,26 @@ Identify required formatting, linting, compilation, tests, dependency checks,
 and workspace-specific commands. Run the documented baseline safeguards before
 touching application code. If the baseline fails, stop and report the failure;
 do not use review feedback as an excuse to work on a broken baseline.
+
+Offer to skip the baseline when CI is already green. Before running it, check:
+
+```bash
+gh pr view --json headRefOid,statusCheckRollup --jq '{head: .headRefOid, checks: (.statusCheckRollup | length), green: ((.statusCheckRollup | length) > 0 and all(.statusCheckRollup[]; (.conclusion // .state) as $r | ($r == "SUCCESS" or $r == "NEUTRAL" or $r == "SKIPPED")))}'
+git rev-parse HEAD
+git status --porcelain
+```
+
+Offer the skip only when `green` is `true`, `head` equals local `HEAD`, and the
+worktree is clean. A pending, failed, or cancelled check, a missing PR, or a
+different commit means no offer: run the baseline.
+
+When the conditions hold, ask the user one yes/no question before running
+anything, using the harness question tool if there is one. State the commit
+and number of passing checks, and name any discovered safeguard that
+`.github/workflows/` does not appear to run. Offer "Skip the baseline
+(Recommended)" first and "Run the baseline" second. Never skip without the
+user's answer. Skipping replaces only this upfront run; the safeguard runs
+before and after each fix still apply.
 
 Documentation-only changes may be exempt when the repository explicitly says
 so, but follow the repository's rule rather than assuming an exemption.
