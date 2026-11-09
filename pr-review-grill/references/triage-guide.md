@@ -78,5 +78,12 @@ For every item, examine:
 - Would a reasonable fix change behavior outside the PR's stated intent?
 - Can the issue be fixed safely now, or does it require team agreement?
 
+If the comment `body` contains a ` ```suggestion ` block, evaluate it as part of
+the classification: does it compile, fit project conventions, and still apply
+to the current code? A suggestion on lines the PR has since changed is likely
+stale. Copilot autofix changesets are not exposed in the comment `body` by the
+REST or GraphQL APIs, so classify those on the prose and do not assume a patch
+exists.
+
 When the user supplies a corrected domain fact, replace the old premise in the
 decision record and reassess the classification.

@@ -58,4 +58,6 @@ Do **not** use as a way to avoid difficult work. Only classify as NEEDS_CLARIFIC
 - When in doubt between SHOULD_FIX and NEEDS_CLARIFICATION, ask: "Can I implement a reasonable interpretation without risking the wrong outcome?" If yes, SHOULD_FIX.
 - **Prefer asking over guessing.** A wrong fix wastes review cycles and can introduce regressions. One well-targeted question is cheaper than an incorrect implementation.
 - If you need external knowledge (e.g., is this pattern idiomatic in this language/framework?), use Perplexity if available.
+- **Read suggested changes.** If the comment `body` contains a ` ```suggestion ` block, treat it as a concrete proposal and evaluate it before classifying: does it compile, fit project conventions, and still apply to the current code? A suggestion on lines the PR has since changed is likely stale. If it is directionally right but not directly applicable, classify on its intent and implement the closest working alternative (see "Fix with adaptation").
+- Copilot autofix changesets (the "Suggested changeset" panel in the UI) are not exposed in the comment `body` by the REST or GraphQL APIs. For those, classify on the prose and do not assume a patch exists.
 - Triage all comments before acting on any. This gives you a full picture before committing to changes.
