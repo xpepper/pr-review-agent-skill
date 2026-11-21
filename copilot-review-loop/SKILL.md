@@ -184,9 +184,14 @@ For each MUST_FIX and SHOULD_FIX comment:
 3. **Fix, park, or ask for clarification**
    - Fix or park as usual. When fixing, fix the class, not the line: look for
      other instances of the same problem in the lines that this PR adds or
-     changes (`git diff origin/<base>...HEAD`), and fix them in the same
-     commit. Leave instances in code that the PR did not touch. List each
-     extra place that you fixed in the reply (step 6).
+     changes, and fix them in the same commit:
+     ```bash
+     base=$(gh pr view {pr} --json baseRefName --jq '.baseRefName')
+     git fetch origin "$base"
+     git diff "origin/$base...HEAD"
+     ```
+     Leave instances in code that the PR did not touch. List each extra place
+     that you fixed in the reply (step 6).
    - If mid-assessment the intent is genuinely ambiguous: post one focused question (see format below), do **not** resolve the thread, skip steps 4–8, move on.
 
    **Clarification question format:**
