@@ -7,9 +7,9 @@ with an opinionated, resumable workflow.
 
 1. Discovers project safeguards (tests, linting, compilation) from project conventions and runs them, or offers to skip that run when CI is already green on the checked-out commit
 2. Collects all unresolved PR comments from any reviewer
-3. Triages each comment: MUST_FIX, SHOULD_FIX, PARK, OUT_OF_SCOPE, or NEEDS_CLARIFICATION. Comments on code that predates the PR (checked with `git blame`) are parked with a follow-up issue instead of being fixed in the PR
+3. Triages each comment: MUST_FIX, SHOULD_FIX, PARK, OUT_OF_SCOPE, or NEEDS_CLARIFICATION. Comments on code that predates the PR (checked with `git blame`) are parked with a follow-up issue instead of being fixed in the PR. For each comment to fix, it also lists other places in the PR's changes that have the same problem
 4. Presents the triage and waits for your go-ahead before changing anything
-5. Addresses comments one at a time: test → fix → test → commit → reply → resolve. Each fix also covers other instances of the same problem in the lines the PR changed, in the same commit
+5. Addresses comments one at a time: test → fix → test → commit → reply → resolve. Each fix also covers the other places listed in the triage, in the same commit
 6. Updates the PR body if the new commits drifted its scope
 7. Posts a final PR summary when done
 

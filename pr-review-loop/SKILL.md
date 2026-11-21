@@ -158,6 +158,8 @@ A range that mixes new and old lines counts as introduced.
 
 If the code is pre-existing and the concern is valid, classify the comment as PARK: fixing old code in this PR widens its scope, and later review rounds keep finding more of it. If the concern does not hold, classify it as OUT_OF_SCOPE as usual, with no follow-up issue. The exception is when the PR's own change makes the problem worse or newly reachable (for example, a new caller of an old buggy function). In that case, triage the comment as usual. Skip the check for issue comments, for threads on the `LEFT` side (there `line` refers to the base file, not HEAD), and for threads whose `line` is null (outdated).
 
+**Look for other instances of the same problem.** For each comment that you classify MUST_FIX or SHOULD_FIX, search the lines that this PR adds or changes (`git diff origin/<base>...HEAD`, with `<base>` from the check above) for other places with the same problem, and note their `file:line`. Fixing them together with the flagged line saves the reviewer from flagging each one in a later round. Leave out places in code that the PR did not touch: they are pre-existing.
+
 If a comment is non-actionable/no-op (e.g. acknowledgment, praise, emoji-only), classify as OUT_OF_SCOPE. Its short acknowledgment reply and resolution happen during processing (Step 6), after the triage is approved — not now.
 
 If a comment's intent is genuinely ambiguous — multiple interpretations exist and each would lead to a meaningfully different change — classify as NEEDS_CLARIFICATION rather than guessing.
@@ -179,6 +181,8 @@ Present a compact table, one row per unresolved comment:
 The rationale is where feedback is challenged rather than blindly accepted: show each comment as accepted, adapted, or pushed back on, with a reason tied to the project's conventions. The shared goal is the highest-quality merge — hold the feedback in high regard, but do not implement a suggestion that conflicts with the project's established conventions without saying so here.
 
 For a row parked because the code is pre-existing, say so in the rationale and state that a follow-up issue will be opened (e.g. "pre-existing on main since abc1234, will open a follow-up issue"). Approving the row approves opening that issue.
+
+For a row with other instances of the same problem, list them in the rationale (e.g. "same unhandled error also at `b.py:40` and `c.py:12`, fixed in the same commit"). Approving the row approves fixing those places too.
 
 **Delivery — overview first, then one decision per row.**
 
@@ -250,7 +254,7 @@ If they fail, stop and report.
 
 **6c. Fix, park, or ask for clarification**
 
-- Fix: implement the change. Then fix the class, not the line: look for other instances of the same problem in the lines that this PR adds or changes (`git diff origin/<base>...HEAD`, where `<base>` is the base branch found in Step 4), and fix them in the same commit. Leave instances in code that the PR did not touch: they are pre-existing (see Step 4). List each extra place that you fixed in the reply (Step 6f), so the reviewer does not have to flag them one by one in later rounds. If another comment in this triage flags one of those places, it needs no further change: reply to it with a link to this commit and resolve it.
+- Fix: implement the change, together with the other instances of the same problem that the approved triage listed for this comment, in the same commit. List those places in the reply (Step 6f). If you find another instance that the triage did not list, do not fix it: mention it in the reply and in the final summary. If another comment in this triage flags one of the places that you fixed, it needs no further change: reply to it with a link to this commit and resolve it.
 - Fix with adaptation: if the reviewer's suggestion is directionally right but the exact code won't compile or is otherwise infeasible, implement the closest working alternative. Document the constraint in your reply (Step 6f) so the reviewer understands why the implementation differs from their suggestion.
 - Park (if you discover mid-fix that it should be parked): write reasoning, revert any partial changes, no commit
 - Ask for clarification (if you discover mid-assessment that the intent is genuinely ambiguous): post one focused question to the thread (see below), do not resolve, no commit, move on
