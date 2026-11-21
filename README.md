@@ -91,7 +91,7 @@ npx skills add xpepper/pr-review-agent-skill/pr-description-review
 
 An in-session Copilot-driven review loop: triggers Copilot review, addresses
 its feedback one comment at a time, and re-triggers Copilot until all critical
-issues are resolved or 2 cycles are complete. Runs within a single agent session.
+issues are resolved or 3 cycles are complete. Runs within a single agent session.
 
 **Install:**
 ```bash
