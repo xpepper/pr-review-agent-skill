@@ -90,14 +90,16 @@ detect that it drifted.
 
 ### 1. Take the backup
 
-Create the state directory **outside the repository** (in the OS temp
-directory) so no recovery step can reach it and it never appears in
-`git status`:
+Create the state directory **outside the repository** in `{tmp}` so no recovery
+step can reach it and it never appears in `git status`. `{tmp}` is the session's
+scratch directory when the harness provides one outside the repository,
+otherwise `${TMPDIR:-/tmp}`:
 
 ```bash
 root="$(git rev-parse --show-toplevel)"
 run_id="$(date -u +%Y%m%dT%H%M%SZ)-$$"
-state_dir="$(mktemp -d "${TMPDIR:-/tmp}/prepare-review-commits.$run_id.XXXXXX")"
+mkdir -p "{tmp}"
+state_dir="$(mktemp -d "{tmp}/prepare-review-commits.$run_id.XXXXXX")"
 
 start_head="$(git rev-parse HEAD)"
 git status --porcelain=v1 -uall > "$state_dir/status.before"
