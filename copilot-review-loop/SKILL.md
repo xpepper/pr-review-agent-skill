@@ -133,7 +133,7 @@ For each repeat:
 
    jq -n --rawfile body "{tmp}/pr-review-reply-{comment_id}.md" '{body:$body}' > "{tmp}/pr-review-reply-{comment_id}.json"
 
-   gh api repos/{owner}/{repo}/pulls/{pull_number}/comments/{comment_id}/replies \
+   gh api repos/{owner}/{repo}/pulls/{pr}/comments/{comment_id}/replies \
      --input "{tmp}/pr-review-reply-{comment_id}.json"
    ```
 2. Resolve the thread on GitHub.
@@ -187,7 +187,7 @@ For each MUST_FIX and SHOULD_FIX comment:
 
    jq -n --rawfile body "{tmp}/pr-review-reply-{comment_id}.md" '{body:$body}' > "{tmp}/pr-review-reply-{comment_id}.json"
 
-   gh api repos/{owner}/{repo}/pulls/{pull_number}/comments/{comment_id}/replies \
+   gh api repos/{owner}/{repo}/pulls/{pr}/comments/{comment_id}/replies \
      --input "{tmp}/pr-review-reply-{comment_id}.json"
    ```
 
