@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI. The gh-copilot-review extension is recommended (gh extension install ChrisCarini/gh-copilot-review). PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.3.0"
+  version: "1.3.1"
 allowed-tools: Bash(gh:*)
 ---
 
@@ -81,24 +81,29 @@ gh pr review --request copilot
 
 Read `references/gh-copilot-review-guide.md` for the polling approach.
 
-Record the current count of unresolved `copilot[bot]` comments before triggering.
+Record the current count of top-level Copilot comments before triggering.
 Poll every 30 seconds until new comments appear. If no new comments after 10 minutes,
 stop and report timeout — do not proceed.
 
 #### 2c. Collect unresolved Copilot comments
 
-Fetch all unresolved comments authored by `copilot[bot]`. Ignore comments from
+Fetch all unresolved comments authored by Copilot. Ignore comments from
 human reviewers (those are handled by the `pr-review-loop` skill).
 
 Fetch every review comment on the PR once, including the replies. Step 2d
 reuses this list.
 ```bash
 gh api --paginate repos/{owner}/{repo}/pulls/{pr}/comments \
-  --jq '.[] | {id, in_reply_to_id, user: .user.login, path, line, body, html_url}'
+  --jq '.[] | {id, in_reply_to_id, user: .user.login,
+    copilot: (.user.type == "Bot" and (.user.login | ascii_downcase | startswith("copilot"))),
+    path, line, body, html_url}'
 ```
 
-The Copilot comments are the entries with `user == "copilot[bot]"` and no
-`in_reply_to_id`. Use the count recorded before triggering (step 2b) to identify which are new.
+The Copilot comments are the entries with `copilot == true` and no
+`in_reply_to_id`. GitHub posts Copilot's inline comments as the bot user
+`Copilot`, not `copilot[bot]`, so the filter matches any bot whose login starts
+with "copilot" (case-insensitive) rather than one exact login. Use the count
+recorded before triggering (step 2b) to identify which are new.
 
 If there are no unresolved Copilot comments, stop — nothing to do.
 
