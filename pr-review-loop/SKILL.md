@@ -156,7 +156,7 @@ echo "$result"
 
 A range that mixes new and old lines counts as introduced.
 
-If the code is pre-existing, classify the comment as PARK, even when the concern is valid: fixing old code in this PR widens its scope, and later review rounds keep finding more of it. The exception is when the PR's own change makes the problem worse or newly reachable (for example, a new caller of an old buggy function). In that case, triage the comment as usual. Skip the check for issue comments, for threads on the `LEFT` side (there `line` refers to the base file, not HEAD), and for threads whose `line` is null (outdated).
+If the code is pre-existing and the concern is valid, classify the comment as PARK: fixing old code in this PR widens its scope, and later review rounds keep finding more of it. If the concern does not hold, classify it as OUT_OF_SCOPE as usual, with no follow-up issue. The exception is when the PR's own change makes the problem worse or newly reachable (for example, a new caller of an old buggy function). In that case, triage the comment as usual. Skip the check for issue comments, for threads on the `LEFT` side (there `line` refers to the base file, not HEAD), and for threads whose `line` is null (outdated).
 
 If a comment is non-actionable/no-op (e.g. acknowledgment, praise, emoji-only), classify as OUT_OF_SCOPE. Its short acknowledgment reply and resolution happen during processing (Step 6), after the triage is approved — not now.
 
