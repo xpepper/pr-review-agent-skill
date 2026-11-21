@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI. The gh-copilot-review extension is recommended (gh extension install ChrisCarini/gh-copilot-review). PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.2.0"
+  version: "1.3.0"
 allowed-tools: Bash(gh:*)
 ---
 
@@ -90,23 +90,80 @@ stop and report timeout — do not proceed.
 Fetch all unresolved comments authored by `copilot[bot]`. Ignore comments from
 human reviewers (those are handled by the `pr-review-loop` skill).
 
+Fetch every review comment on the PR once, including the replies. Step 2d
+reuses this list.
 ```bash
-gh api repos/{owner}/{repo}/pulls/{pr}/comments \
-  --jq '.[] | select(.user.login == "copilot[bot]")'
+gh api --paginate repos/{owner}/{repo}/pulls/{pr}/comments \
+  --jq '.[] | {id, in_reply_to_id, user: .user.login, path, line, body, html_url}'
 ```
 
-Fetch all Copilot comments. Use the count recorded before triggering (step 2b) to identify which are new.
+The Copilot comments are the entries with `user == "copilot[bot]"` and no
+`in_reply_to_id`. Use the count recorded before triggering (step 2b) to identify which are new.
 
 If there are no unresolved Copilot comments, stop — nothing to do.
 
-#### 2d. Address comments — inner loop
+#### 2d. Skip repeats of earlier answers
+
+Copilot often raises a finding again in a later round after it was already
+rejected or parked. Do not triage those findings a second time.
+
+Use the list of comments fetched in step 2c. The earlier answers are
+replies (`in_reply_to_id` set) to Copilot comments that are not new in this
+round, where the reply rejected the finding
+(OUT_OF_SCOPE) or parked it (PARK). Because they are read from the PR, this
+also covers rounds from an earlier run of this skill.
+
+A new Copilot comment is a **repeat** when it raises the same concern as one
+of those earlier comments, on the same file. The line number may have moved.
+If you are not sure that it is the same concern, it is not a repeat: triage
+it in step 2e.
+
+A new comment that repeats a finding which was **fixed** is not a repeat in
+this sense. Copilot may be pointing at an incomplete fix, so triage it in
+step 2e as usual.
+
+For each repeat:
+
+1. Reply with a link to the earlier answer. Skip this if the comment already
+   has a reply that links to an earlier answer: a run that stopped before
+   step 2 has already posted it.
+   ```bash
+   cat > "{tmp}/pr-review-reply-{comment_id}.md" <<'EOF'
+   This was already raised in an earlier review round and <rejected|parked>: <html_url of the earlier reply>
+
+   <one line: the reason given there>
+   EOF
+
+   jq -n --rawfile body "{tmp}/pr-review-reply-{comment_id}.md" '{body:$body}' > "{tmp}/pr-review-reply-{comment_id}.json"
+
+   gh api repos/{owner}/{repo}/pulls/{pr}/comments/{comment_id}/replies \
+     --input "{tmp}/pr-review-reply-{comment_id}.json"
+   ```
+2. Resolve the thread on GitHub.
+3. Record it for the "Repeats" section of the summary, and leave it out of
+   step 2e.
+
+If every new comment was a repeat, go straight to step 2f.
+
+#### 2e. Address comments — inner loop
 
 **If `pr-review-loop` skill is available:**
 Invoke the `pr-review-loop` skill, passing only the Copilot comments collected
-in step 2c as the scope. It will handle triage, one-at-a-time fixes, and replies.
+in step 2c, minus the repeats skipped in step 2d, as the scope. It will handle triage, one-at-a-time fixes, and replies.
+
+`pr-review-loop` does not reply to the comments that it parks or rejects:
+it lists them only in its summary. Step 2d needs those replies to spot
+repeats in a later round, so when `pr-review-loop` returns, go through the
+Copilot comments in its scope that were classified PARK or OUT_OF_SCOPE. For
+each one that has no reply yet:
+
+1. Reply with the classification and the reason given in the triage, for
+   example "Rejected: <reason>" or "Parked: <reason>". Use the reply command
+   from step 2d.
+2. Resolve the thread on GitHub.
 
 **If `pr-review-loop` skill is NOT available:**
-Follow this process for each comment, one at a time (MUST_FIX first, then SHOULD_FIX):
+Follow this process for each comment that is not a repeat, one at a time (MUST_FIX first, then SHOULD_FIX):
 
 Triage using the five categories defined in `references/triage-guide.md`
 (MUST_FIX, SHOULD_FIX, PARK, OUT_OF_SCOPE, NEEDS_CLARIFICATION). Read that file before triaging.
@@ -133,7 +190,7 @@ For each MUST_FIX and SHOULD_FIX comment:
 
    jq -n --rawfile body "{tmp}/pr-review-reply-{comment_id}.md" '{body:$body}' > "{tmp}/pr-review-reply-{comment_id}.json"
 
-   gh api repos/{owner}/{repo}/pulls/{pull_number}/comments/{comment_id}/replies \
+   gh api repos/{owner}/{repo}/pulls/{pr}/comments/{comment_id}/replies \
      --input "{tmp}/pr-review-reply-{comment_id}.json"
    ```
 
@@ -157,13 +214,16 @@ For each MUST_FIX and SHOULD_FIX comment:
    rm .pr-review/plan-<comment-id>.md
    ```
 
-#### 2e. Check stop conditions
+#### 2f. Check stop conditions
 
 Stop iterating if any of:
 - This pass found no MUST_FIX Copilot comments: the review has converged
 - A MUST_FIX Copilot comment from this pass is still unresolved (for example, its fix failed the safeguards): report it in the summary instead of starting another round
 - Only OUT_OF_SCOPE or NEEDS_CLARIFICATION Copilot comments remain (awaiting reviewer input)
 - This was the 3rd iteration: the review did not converge, so step back (see below)
+
+Repeats skipped in step 2d are never triaged, so they never count as MUST_FIX
+here. A pass that found only repeats has converged.
 
 Otherwise (this pass found MUST_FIX comments and all of them are now fixed),
 continue to the next iteration (back to step 2a) so Copilot can check the fixes.
@@ -206,6 +266,10 @@ Completed N Copilot review cycle(s).
 - <description> — <reason>
 - ...
 
+### Repeats
+- <description> — already <rejected|parked> in <link to earlier reply> (Copilot comment #<id>)
+- ...
+
 ### Awaiting Clarification
 - Asked Copilot: "<question>" — thread left open (comment #<id>)
 - ...
@@ -230,7 +294,7 @@ This skill can be interrupted and restarted in a fresh context at any point.
 
 On restart:
 1. Run pre-flight (Step 1)
-2. Check for an existing `.pr-review/plan-*.md` — if found, continue mid-fix from step 2d
+2. Check for an existing `.pr-review/plan-*.md` — if found, continue mid-fix from step 2e
 3. Re-fetch unresolved Copilot comments — already-resolved ones won't appear
 4. Continue the outer loop from the current state
 
