@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI or another GitHub client, jq, and the PR branch checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "0.3.0"
+  version: "0.4.0"
 allowed-tools: Bash
 ---
 
@@ -219,7 +219,9 @@ Use this structure:
 unsupported, or contradicted. Include uncertainty explicitly.>
 
 **Provisional assessment**
-<Recommend a classification and explain the strongest argument against it.>
+<Recommend a classification and explain the strongest argument against it.
+If the comment has a ```suggestion block, say whether to apply it as written,
+adapt it, or reject it, and why.>
 
 **Decision**
 <Ask for the user's classification or the one fact needed to decide it.>
