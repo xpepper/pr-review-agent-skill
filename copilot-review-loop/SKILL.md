@@ -151,6 +151,17 @@ If every new comment was a repeat, go straight to step 2f.
 Invoke the `pr-review-loop` skill, passing only the Copilot comments collected
 in step 2c, minus the repeats skipped in step 2d, as the scope. It will handle triage, one-at-a-time fixes, and replies.
 
+`pr-review-loop` does not reply to the comments that it parks or rejects:
+it lists them only in its summary. Step 2d needs those replies to spot
+repeats in a later round, so when `pr-review-loop` returns, go through the
+Copilot comments in its scope that were classified PARK or OUT_OF_SCOPE. For
+each one that has no reply yet:
+
+1. Reply with the classification and the reason given in the triage, for
+   example "Rejected: <reason>" or "Parked: <reason>". Use the reply command
+   from step 2d.
+2. Resolve the thread on GitHub.
+
 **If `pr-review-loop` skill is NOT available:**
 Follow this process for each comment that is not a repeat, one at a time (MUST_FIX first, then SHOULD_FIX):
 
