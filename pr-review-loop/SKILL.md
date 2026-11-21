@@ -217,16 +217,16 @@ If they fail, stop and report.
 **Clarification question format (for NEEDS_CLARIFICATION or mid-assessment uncertainty):**
 
 ```bash
-cat > {tmp}/pr-review-reply-{comment_id}.md <<'EOF'
+cat > "{tmp}/pr-review-reply-{comment_id}.md" <<'EOF'
 Thanks for the feedback! Before I make a change, I want to make sure I understand what you're after:
 
 <one specific, focused question — e.g. "Did you mean to rename this everywhere, or just at the call site?" or "Would you prefer approach A (…) or approach B (…)?">
 EOF
 
-jq -n --rawfile body {tmp}/pr-review-reply-{comment_id}.md '{body:$body}' > {tmp}/pr-review-reply-{comment_id}.json
+jq -n --rawfile body "{tmp}/pr-review-reply-{comment_id}.md" '{body:$body}' > "{tmp}/pr-review-reply-{comment_id}.json"
 
 gh api repos/{owner}/{repo}/pulls/{pull_number}/comments/{comment_id}/replies \
-  --input {tmp}/pr-review-reply-{comment_id}.json
+  --input "{tmp}/pr-review-reply-{comment_id}.json"
 ```
 
 Ask exactly **one** question. Do not list alternatives unless directly needed to frame the question. Leave the thread unresolved so the reviewer's answer re-surfaces it.
@@ -274,27 +274,27 @@ The reply mechanism differs by comment type:
 
 **For review thread comments** (inline, anchored to a file/line):
 ```bash
-cat > {tmp}/pr-review-reply-{comment_id}.md <<'EOF'
+cat > "{tmp}/pr-review-reply-{comment_id}.md" <<'EOF'
 <reply text>
 EOF
 
-jq -n --rawfile body {tmp}/pr-review-reply-{comment_id}.md '{body:$body}' > {tmp}/pr-review-reply-{comment_id}.json
+jq -n --rawfile body "{tmp}/pr-review-reply-{comment_id}.md" '{body:$body}' > "{tmp}/pr-review-reply-{comment_id}.json"
 
 # POST the reply and capture the response — do NOT run this twice
 gh api repos/{owner}/{repo}/pulls/{pull_number}/comments/{comment_id}/replies \
-  --input {tmp}/pr-review-reply-{comment_id}.json > {tmp}/pr-review-reply-{comment_id}-response.json
+  --input "{tmp}/pr-review-reply-{comment_id}.json" > "{tmp}/pr-review-reply-{comment_id}-response.json"
 ```
 
 **For issue comments** (top-level PR conversation comments):
 ```bash
-cat > {tmp}/pr-review-reply-{comment_id}.md <<'EOF'
+cat > "{tmp}/pr-review-reply-{comment_id}.md" <<'EOF'
 <reply text — quote or reference the original comment so context is clear>
 EOF
 
-jq -n --rawfile body {tmp}/pr-review-reply-{comment_id}.md '{body:$body}' > {tmp}/pr-review-reply-{comment_id}.json
+jq -n --rawfile body "{tmp}/pr-review-reply-{comment_id}.md" '{body:$body}' > "{tmp}/pr-review-reply-{comment_id}.json"
 
 gh api repos/{owner}/{repo}/issues/{pr_number}/comments \
-  --input {tmp}/pr-review-reply-{comment_id}.json > {tmp}/pr-review-reply-{comment_id}-response.json
+  --input "{tmp}/pr-review-reply-{comment_id}.json" > "{tmp}/pr-review-reply-{comment_id}-response.json"
 ```
 
 > Note: this creates a new top-level comment in the PR conversation. It is not threaded under the original — quoting the relevant excerpt is how context is preserved.
@@ -305,13 +305,13 @@ Immediately verify what was posted using a **GET** with the ID from the POST res
 
 For review thread replies:
 ```bash
-NEW_REPLY_ID=$(jq '.id' {tmp}/pr-review-reply-{comment_id}-response.json)
+NEW_REPLY_ID=$(jq '.id' "{tmp}/pr-review-reply-{comment_id}-response.json")
 gh api repos/{owner}/{repo}/pulls/comments/$NEW_REPLY_ID | jq '{id, body, html_url}'
 ```
 
 For issue comment replies:
 ```bash
-NEW_COMMENT_ID=$(jq '.id' {tmp}/pr-review-reply-{comment_id}-response.json)
+NEW_COMMENT_ID=$(jq '.id' "{tmp}/pr-review-reply-{comment_id}-response.json")
 gh api repos/{owner}/{repo}/issues/comments/$NEW_COMMENT_ID | jq '{id, body, html_url}'
 ```
 
@@ -412,11 +412,11 @@ gh pr view {pr_number} --json body --jq '.body'
 If drift is detected, update the PR body, preserving the parts that are still accurate:
 
 ```bash
-cat > {tmp}/pr-body.md <<'EOF'
+cat > "{tmp}/pr-body.md" <<'EOF'
 <updated PR body>
 EOF
 
-gh pr edit {pr_number} --body-file {tmp}/pr-body.md
+gh pr edit {pr_number} --body-file "{tmp}/pr-body.md"
 ```
 
 Record the update in the Step 9 summary (an "Updated PR body to reflect …" line). This was already sanctioned by the triage approval in Step 5 and is surfaced in the summary, so no separate confirmation is needed.
@@ -452,11 +452,11 @@ Omit any section that has no entries.
 
 Use a body file to avoid shell interpolation:
 ```bash
-cat > {tmp}/pr-review-summary.md <<'EOF'
+cat > "{tmp}/pr-review-summary.md" <<'EOF'
 <summary text>
 EOF
 
-gh pr comment {pr_number} --body-file {tmp}/pr-review-summary.md
+gh pr comment {pr_number} --body-file "{tmp}/pr-review-summary.md"
 ```
 
 Then verify the posted summary body:
