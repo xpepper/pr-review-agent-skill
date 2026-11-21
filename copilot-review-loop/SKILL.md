@@ -90,12 +90,15 @@ stop and report timeout — do not proceed.
 Fetch all unresolved comments authored by `copilot[bot]`. Ignore comments from
 human reviewers (those are handled by the `pr-review-loop` skill).
 
+Fetch every review comment on the PR once, including the replies. Step 2d
+reuses this list.
 ```bash
-gh api repos/{owner}/{repo}/pulls/{pr}/comments \
-  --jq '.[] | select(.user.login == "copilot[bot]")'
+gh api --paginate repos/{owner}/{repo}/pulls/{pr}/comments \
+  --jq '.[] | {id, in_reply_to_id, user: .user.login, path, line, body, html_url}'
 ```
 
-Fetch all Copilot comments. Use the count recorded before triggering (step 2b) to identify which are new.
+The Copilot comments are the entries with `user == "copilot[bot]"` and no
+`in_reply_to_id`. Use the count recorded before triggering (step 2b) to identify which are new.
 
 If there are no unresolved Copilot comments, stop — nothing to do.
 
@@ -104,13 +107,7 @@ If there are no unresolved Copilot comments, stop — nothing to do.
 Copilot often raises a finding again in a later round after it was already
 rejected or parked. Do not triage those findings a second time.
 
-Fetch every review comment on the PR, including the replies:
-```bash
-gh api --paginate repos/{owner}/{repo}/pulls/{pr}/comments \
-  --jq '.[] | {id, in_reply_to_id, user: .user.login, path, line, body, html_url}'
-```
-
-The earlier answers are replies (`in_reply_to_id` set) to Copilot comments
+Use the list of comments fetched in step 2c. The earlier answers are replies (`in_reply_to_id` set) to Copilot comments
 that are not new in this round, where the reply rejected the finding
 (OUT_OF_SCOPE) or parked it (PARK). Because they are read from the PR, this
 also covers rounds from an earlier run of this skill.
