@@ -27,7 +27,7 @@ Valid concern, but intentionally deferred outside this PR.
 Use when:
 - The fix requires changes in a different PR or component
 - The effort is disproportionate to the PR scope
-- It's a known existing issue not introduced by this PR
+- The flagged code is pre-existing: `git blame` shows the line was last changed by a commit already on the base branch. Park it even when the concern is valid, unless the PR makes the problem worse or newly reachable
 - You are deferring: create a follow-up issue and reference it in your reply
 
 ## OUT_OF_SCOPE
@@ -36,7 +36,7 @@ Not applicable to this PR; rejected with explanation.
 Use when:
 - Comment is based on a misunderstanding
 - The suggested approach contradicts project conventions
-- The comment refers to code not changed by this PR
+- The comment refers to code not changed by this PR and the concern does not hold (a valid concern on pre-existing code is PARK)
 - A prior discussion or decision already covers this
 
 ## NEEDS_CLARIFICATION

@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI or any other tool to interact with GitHub. PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.7.0"
+  version: "1.8.0"
 allowed-tools: Bash
 ---
 
@@ -140,6 +140,17 @@ Classify every unresolved comment as: MUST_FIX, SHOULD_FIX, PARK, OUT_OF_SCOPE, 
 
 Triage all comments before acting on any.
 
+**Check whether the flagged code is pre-existing.** For each review thread with a `path` and a non-null `line`, find the commit that last touched that line and check whether it is already on the base branch:
+
+```bash
+base=$(gh pr view {pr_number} --json baseRefName --jq '.baseRefName')
+git fetch origin "$base"
+commit=$(git blame -L {line},{line} --porcelain HEAD -- "{path}" | head -1 | cut -d' ' -f1)
+git merge-base --is-ancestor "$commit" "origin/$base" && echo pre-existing || echo introduced
+```
+
+If the code is pre-existing, classify the comment as PARK, even when the concern is valid: fixing old code in this PR widens its scope, and later review rounds keep finding more of it. The exception is when the PR's own change makes the problem worse or newly reachable (for example, a new caller of an old buggy function). In that case, triage the comment as usual. Skip the check for issue comments and for threads whose `line` is null (outdated).
+
 If a comment is non-actionable/no-op (e.g. acknowledgment, praise, emoji-only), classify as OUT_OF_SCOPE. Its short acknowledgment reply and resolution happen during processing (Step 6), after the triage is approved — not now.
 
 If a comment's intent is genuinely ambiguous — multiple interpretations exist and each would lead to a meaningfully different change — classify as NEEDS_CLARIFICATION rather than guessing.
@@ -159,6 +170,8 @@ Present a compact table, one row per unresolved comment:
 | 1 | @author `file:line` (review thread) or short excerpt (issue comment) | MUST_FIX / SHOULD_FIX / PARK / OUT_OF_SCOPE / NEEDS_CLARIFICATION | one line, grounded in the codebase conventions / agent guidelines found in Step 1 |
 
 The rationale is where feedback is challenged rather than blindly accepted: show each comment as accepted, adapted, or pushed back on, with a reason tied to the project's conventions. The shared goal is the highest-quality merge — hold the feedback in high regard, but do not implement a suggestion that conflicts with the project's established conventions without saying so here.
+
+For a row parked because the code is pre-existing, say so in the rationale and state that a follow-up issue will be opened (e.g. "pre-existing on main since abc1234, will open a follow-up issue"). Approving the row approves opening that issue.
 
 **Delivery — overview first, then one decision per row.**
 
@@ -183,7 +196,19 @@ Only when every row has an approved class, move on to Step 6. If the overrides c
 
 Process in order: all MUST_FIX first, then SHOULD_FIX.
 
-For OUT_OF_SCOPE **no-op** comments (acknowledgment, praise, emoji-only): post a short acknowledgment reply and resolve the thread (Steps 6f–6g), then move on. Skip PARK and genuine OUT_OF_SCOPE suggestions for now — they are deferred and reported in the summary.
+For OUT_OF_SCOPE **no-op** comments (acknowledgment, praise, emoji-only): post a short acknowledgment reply and resolve the thread (Steps 6f–6g), then move on. Skip other PARK comments and genuine OUT_OF_SCOPE suggestions for now — they are deferred and reported in the summary.
+
+**Pre-existing PARK comments** (parked by the check in Step 4): open a follow-up issue that quotes the comment and links the thread, then reply to the thread with a link to the issue and resolve it (Steps 6f–6g). No code change and no commit.
+
+```bash
+cat > "{tmp}/pr-review-issue-{comment_id}.md" <<'EOF'
+Raised in review of #{pr_number} (<link to the review thread>), on code that predates that PR.
+
+> <quoted comment>
+EOF
+
+gh issue create --title "<short summary of the concern>" --body-file "{tmp}/pr-review-issue-{comment_id}.md"
+```
 
 **NEEDS_CLARIFICATION comments:** post one focused question as a reply to the thread (see format below), do **not** resolve the thread, and move on to the next comment. Do not implement anything.
 
