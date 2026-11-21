@@ -45,12 +45,12 @@ If it appears in the output, use `gh copilot-review`. Otherwise fall back to `gh
 ## Waiting for Copilot to complete
 
 After triggering, Copilot review takes 30–120 seconds. Poll until new
-`copilot[bot]` review comments appear:
+Copilot review comments appear:
 
 ```bash
 # Count current Copilot comments
 gh api repos/{owner}/{repo}/pulls/{pr}/comments \
-  --jq '[.[] | select(.user.login == "copilot[bot]")] | length'
+  --jq '[.[] | select(.user.type == "Bot" and (.user.login | ascii_downcase | startswith("copilot")))] | length'
 ```
 
 Record this count as the baseline. After triggering, poll until the count increases.
@@ -59,10 +59,13 @@ Poll every 15 seconds. After 3 minutes with no new comments, stop and report tim
 
 ## Identifying Copilot comments
 
-Filter by reviewer login `copilot[bot]`:
+GitHub posts Copilot's inline review comments as the bot user `Copilot`, and
+the review itself as `copilot-pull-request-reviewer[bot]`. Neither is
+`copilot[bot]`. Match any bot whose login starts with "copilot"
+(case-insensitive), so a future rename does not break the filter:
 ```bash
 gh api repos/{owner}/{repo}/pulls/{pr}/comments \
-  --jq '.[] | select(.user.login == "copilot[bot]")'
+  --jq '.[] | select(.user.type == "Bot" and (.user.login | ascii_downcase | startswith("copilot")))'
 ```
 
 Fetch all Copilot comments. Use the count delta from polling to identify which are new in this review cycle.
