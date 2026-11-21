@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI. The gh-copilot-review extension is recommended (gh extension install ChrisCarini/gh-copilot-review). PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.1.0"
+  version: "1.1.1"
 allowed-tools: Bash(gh:*)
 ---
 
@@ -15,7 +15,7 @@ allowed-tools: Bash(gh:*)
 
 Automate an iterative Copilot-driven review loop: trigger a GitHub Copilot
 review, address its feedback one comment at a time, then re-trigger Copilot
-to review again. Repeat up to 2 cycles until all critical issues are resolved.
+to review again. Repeat up to 3 cycles until a review finds no critical issues.
 
 This is an **in-session** loop — one long agent context that iterates internally.
 It is not the [Ralph Wiggum pattern](https://ghuntley.com/ralph/), which is an
@@ -56,9 +56,9 @@ Inspect the project for safeguard conventions by checking these files (if they e
 Identify all required safeguards (tests, compilation, linting, formatting, etc.).
 Run all of them. If any fail, stop immediately and report — do not proceed.
 
-### Step 2 — Outer loop (max 2 iterations)
+### Step 2 — Outer loop (max 3 iterations)
 
-Repeat up to 2 times:
+Repeat up to 3 times:
 
 #### 2a. Request Copilot review
 
@@ -160,11 +160,13 @@ For each MUST_FIX and SHOULD_FIX comment:
 #### 2e. Check stop conditions
 
 Stop iterating if any of:
-- No MUST_FIX Copilot comments remain after this pass
+- This pass found no MUST_FIX Copilot comments: the review has converged
+- A MUST_FIX Copilot comment from this pass is still unresolved (for example, its fix failed the safeguards): report it in the summary instead of starting another round
 - Only OUT_OF_SCOPE or NEEDS_CLARIFICATION Copilot comments remain (awaiting reviewer input)
-- This was the 10th iteration
+- This was the 3rd iteration
 
-Otherwise continue to the next iteration (back to step 2a).
+Otherwise (this pass found MUST_FIX comments and all of them are now fixed),
+continue to the next iteration (back to step 2a) so Copilot can check the fixes.
 
 ### Step 3 — Summary
 
@@ -189,6 +191,10 @@ Completed N Copilot review cycle(s).
 
 ### Awaiting Clarification
 - Asked Copilot: "<question>" — thread left open (comment #<id>)
+- ...
+
+### Unresolved MUST_FIX
+- <description> — <why it could not be fixed> (Copilot comment #<id>)
 - ...
 ```
 

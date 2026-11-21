@@ -2,7 +2,7 @@
 
 An [Agent Skills](https://agentskills.io) skill that automates iterative
 GitHub Copilot review loops within a single agent session: trigger Copilot
-review, address its feedback one comment at a time, repeat up to 2 cycles.
+review, address its feedback one comment at a time, repeat up to 3 cycles.
 
 ## What it does
 
@@ -10,7 +10,7 @@ review, address its feedback one comment at a time, repeat up to 2 cycles.
 2. Triggers a GitHub Copilot review on the PR
 3. Waits for Copilot to complete, then collects its unresolved comments
 4. Addresses each comment one at a time: triage → test → fix → test → commit → reply → resolve
-5. Re-triggers Copilot review and repeats (max 2 cycles)
+5. Re-triggers Copilot review and repeats (max 3 cycles)
 6. Posts a final PR summary
 
 If the `pr-review-loop` skill is also installed, delegates the inner loop to it.
