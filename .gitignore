@@ -3,3 +3,5 @@
 .agents/
 marketing/
 playground/
+__pycache__/
+.pytest_cache/

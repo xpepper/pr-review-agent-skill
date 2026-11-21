@@ -16,6 +16,7 @@ A collection of [Agent Skills](https://agentskills.io) for automating PR code re
 <skill-name>.skill      # packaged skill — build artifact, gitignored
 docs/plans/             # implementation plans
 package-skill.sh        # packaging script
+scripts/check_skills.py # CI check for frontmatter and references/ links
 ```
 
 ## SKILL.md conventions
@@ -48,8 +49,9 @@ Rules:
 1. Create `<skill-name>/SKILL.md` with the frontmatter above
 2. Add `<skill-name>/README.md` with install instructions and a description of what the skill does
 3. Add any reference documents under `<skill-name>/references/`
-4. Run `./package-skill.sh` to build the `.skill` package
-5. Push, then verify with the test cycle below
+4. Run `uv run scripts/check_skills.py` to check the frontmatter and `references/` links (CI runs it on every PR)
+5. Run `./package-skill.sh` to build the `.skill` package
+6. Push, then verify with the test cycle below
 
 ## Packaging
 
