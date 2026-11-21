@@ -27,7 +27,7 @@ Valid concern, but intentionally deferred outside this PR.
 Use when:
 - The fix requires changes in a different PR or component
 - The effort is disproportionate to the PR scope
-- The flagged code is pre-existing: `git blame` shows the line was last changed by a commit already on the base branch. Park it even when the concern is valid, unless the PR makes the problem worse or newly reachable
+- The flagged code is pre-existing: `git blame` shows that every flagged line was last changed by a commit already on the base branch. Park it even when the concern is valid, unless the PR makes the problem worse or newly reachable
 - You are deferring: create a follow-up issue and reference it in your reply
 
 ## OUT_OF_SCOPE

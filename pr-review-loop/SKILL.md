@@ -104,6 +104,8 @@ query($owner:String!, $name:String!, $number:Int!) {
           id
           isResolved
           path
+          diffSide
+          startLine
           line
           comments(first:20) {
             nodes {
@@ -140,16 +142,21 @@ Classify every unresolved comment as: MUST_FIX, SHOULD_FIX, PARK, OUT_OF_SCOPE, 
 
 Triage all comments before acting on any.
 
-**Check whether the flagged code is pre-existing.** For each review thread with a `path` and a non-null `line`, find the commit that last touched that line and check whether it is already on the base branch:
+**Check whether the flagged code is pre-existing.** For each review thread on the `RIGHT` side of the diff with a `path` and a non-null `line`, find the commits that last touched every line from `startLine` to `line` (use `line` for both when `startLine` is null), and check whether all of them are already on the base branch:
 
 ```bash
 base=$(gh pr view {pr_number} --json baseRefName --jq '.baseRefName')
 git fetch origin "$base"
-commit=$(git blame -L {line},{line} --porcelain HEAD -- "{path}" | head -1 | cut -d' ' -f1)
-git merge-base --is-ancestor "$commit" "origin/$base" && echo pre-existing || echo introduced
+result=pre-existing
+for c in $(git blame -L {startLine},{line} --porcelain HEAD -- "{path}" | grep -E '^[0-9a-f]{40} ' | cut -d' ' -f1 | sort -u); do
+  git merge-base --is-ancestor "$c" "origin/$base" || result=introduced
+done
+echo "$result"
 ```
 
-If the code is pre-existing, classify the comment as PARK, even when the concern is valid: fixing old code in this PR widens its scope, and later review rounds keep finding more of it. The exception is when the PR's own change makes the problem worse or newly reachable (for example, a new caller of an old buggy function). In that case, triage the comment as usual. Skip the check for issue comments and for threads whose `line` is null (outdated).
+A range that mixes new and old lines counts as introduced.
+
+If the code is pre-existing, classify the comment as PARK, even when the concern is valid: fixing old code in this PR widens its scope, and later review rounds keep finding more of it. The exception is when the PR's own change makes the problem worse or newly reachable (for example, a new caller of an old buggy function). In that case, triage the comment as usual. Skip the check for issue comments, for threads on the `LEFT` side (there `line` refers to the base file, not HEAD), and for threads whose `line` is null (outdated).
 
 If a comment is non-actionable/no-op (e.g. acknowledgment, praise, emoji-only), classify as OUT_OF_SCOPE. Its short acknowledgment reply and resolution happen during processing (Step 6), after the triage is approved — not now.
 
