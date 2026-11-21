@@ -207,9 +207,18 @@ For OUT_OF_SCOPE **no-op** comments (acknowledgment, praise, emoji-only): post a
 
 **Pre-existing PARK comments** (parked by the check in Step 4): open a follow-up issue that quotes the comment and links the thread, then reply to the thread with a link to the issue and resolve it (Steps 6f–6g). No code change and no commit.
 
+A run that stopped after creating the issue but before resolving the thread leaves that issue behind, so look for it first and reuse it if found. The thread link is `https://github.com/{owner}/{repo}/pull/{pr_number}#discussion_r{databaseId}`, using the `databaseId` of the thread's first comment:
+
+```bash
+gh issue list --state all --limit 200 --json number,url,body \
+  --jq 'map(select(.body | contains("pull/{pr_number}#discussion_r{databaseId}"))) | map({number, url})'
+```
+
+GitHub search does not reliably match URLs, so filter the issue bodies with `jq` as above. If no issue is found, create one:
+
 ```bash
 cat > "{tmp}/pr-review-issue-{comment_id}.md" <<'EOF'
-Raised in review of #{pr_number} (<link to the review thread>), on code that predates that PR.
+Raised in review of #{pr_number} (<thread link>), on code that predates that PR.
 
 > <quoted comment>
 EOF
