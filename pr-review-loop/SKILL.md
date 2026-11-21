@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI or any other tool to interact with GitHub. PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.8.0"
+  version: "1.9.0"
 allowed-tools: Bash
 ---
 
@@ -250,7 +250,7 @@ If they fail, stop and report.
 
 **6c. Fix, park, or ask for clarification**
 
-- Fix: implement the change
+- Fix: implement the change. Then fix the class, not the line: look for other instances of the same problem in the lines that this PR adds or changes (`git diff origin/<base>...HEAD`, where `<base>` is the base branch found in Step 4), and fix them in the same commit. Leave instances in code that the PR did not touch: they are pre-existing (see Step 4). List each extra place that you fixed in the reply (Step 6f), so the reviewer does not have to flag them one by one in later rounds. If another comment in this triage flags one of those places, it needs no further change: reply to it with a link to this commit and resolve it.
 - Fix with adaptation: if the reviewer's suggestion is directionally right but the exact code won't compile or is otherwise infeasible, implement the closest working alternative. Document the constraint in your reply (Step 6f) so the reviewer understands why the implementation differs from their suggestion.
 - Park (if you discover mid-fix that it should be parked): write reasoning, revert any partial changes, no commit
 - Ask for clarification (if you discover mid-assessment that the intent is genuinely ambiguous): post one focused question to the thread (see below), do not resolve, no commit, move on

@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI. The gh-copilot-review extension is recommended (gh extension install ChrisCarini/gh-copilot-review). PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.3.1"
+  version: "1.4.0"
 allowed-tools: Bash(gh:*)
 ---
 
@@ -182,7 +182,11 @@ For each MUST_FIX and SHOULD_FIX comment:
 2. **Run safeguards** — all must pass before touching code
 
 3. **Fix, park, or ask for clarification**
-   - Fix or park as usual.
+   - Fix or park as usual. When fixing, fix the class, not the line: look for
+     other instances of the same problem in the lines that this PR adds or
+     changes (`git diff origin/<base>...HEAD`), and fix them in the same
+     commit. Leave instances in code that the PR did not touch. List each
+     extra place that you fixed in the reply (step 6).
    - If mid-assessment the intent is genuinely ambiguous: post one focused question (see format below), do **not** resolve the thread, skip steps 4–8, move on.
 
    **Clarification question format:**
