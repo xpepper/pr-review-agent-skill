@@ -254,7 +254,7 @@ If they fail, stop and report.
 
 **6c. Fix, park, or ask for clarification**
 
-- Fix: implement the change, together with the other instances of the same problem that the approved triage listed for this comment, in the same commit. List those places in the reply (Step 6f). If you find another instance that the triage did not list, do not fix it: mention it in the reply and in the final summary. If another comment in this triage flags one of the places that you fixed, it needs no further change: reply to it with a link to this commit and resolve it.
+- Fix: implement the change, together with the other instances of the same problem that the approved triage listed for this comment, in the same commit. List those places in the reply (Step 6f). If you find another instance that the triage did not list, do not fix it: mention it in the reply and under "Parked" in the final summary (Step 9). If another comment in this triage flags one of the places that you fixed, it needs no further change: reply to it with a link to this commit and resolve it.
 - Fix with adaptation: if the reviewer's suggestion is directionally right but the exact code won't compile or is otherwise infeasible, implement the closest working alternative. Document the constraint in your reply (Step 6f) so the reviewer understands why the implementation differs from their suggestion.
 - Park (if you discover mid-fix that it should be parked): write reasoning, revert any partial changes, no commit
 - Ask for clarification (if you discover mid-assessment that the intent is genuinely ambiguous): post one focused question to the thread (see below), do not resolve, no commit, move on
