@@ -107,8 +107,9 @@ If there are no unresolved Copilot comments, stop — nothing to do.
 Copilot often raises a finding again in a later round after it was already
 rejected or parked. Do not triage those findings a second time.
 
-Use the list of comments fetched in step 2c. The earlier answers are replies (`in_reply_to_id` set) to Copilot comments
-that are not new in this round, where the reply rejected the finding
+Use the list of comments fetched in step 2c. The earlier answers are
+replies (`in_reply_to_id` set) to Copilot comments that are not new in this
+round, where the reply rejected the finding
 (OUT_OF_SCOPE) or parked it (PARK). Because they are read from the PR, this
 also covers rounds from an earlier run of this skill.
 
@@ -123,7 +124,9 @@ step 2e as usual.
 
 For each repeat:
 
-1. Reply with a link to the earlier answer:
+1. Reply with a link to the earlier answer. Skip this if the comment already
+   has a reply that links to an earlier answer: a run that stopped before
+   step 2 has already posted it.
    ```bash
    cat > "{tmp}/pr-review-reply-{comment_id}.md" <<'EOF'
    This was already raised in an earlier review round and <rejected|parked>: <html_url of the earlier reply>
