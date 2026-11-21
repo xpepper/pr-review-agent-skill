@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI or any other tool to interact with GitHub. PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.9.0"
+  version: "1.10.0"
 allowed-tools: Bash
 ---
 
@@ -179,6 +179,8 @@ Present a compact table, one row per unresolved comment:
 | 1 | @author `file:line` (review thread) or short excerpt (issue comment) | MUST_FIX / SHOULD_FIX / PARK / OUT_OF_SCOPE / NEEDS_CLARIFICATION | one line, grounded in the codebase conventions / agent guidelines found in Step 1 |
 
 The rationale is where feedback is challenged rather than blindly accepted: show each comment as accepted, adapted, or pushed back on, with a reason tied to the project's conventions. The shared goal is the highest-quality merge — hold the feedback in high regard, but do not implement a suggestion that conflicts with the project's established conventions without saying so here.
+
+For a comment with a ` ```suggestion ` block, say in the rationale whether the fix applies the suggestion as written, adapts it, or rejects it, and why (e.g. "adapts the suggestion: it calls `foo()`, which this module does not import").
 
 For a row parked because the code is pre-existing, say so in the rationale and state that a follow-up issue will be opened (e.g. "pre-existing on main since abc1234, will open a follow-up issue"). Approving the row approves opening that issue.
 
