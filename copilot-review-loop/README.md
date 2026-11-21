@@ -11,7 +11,9 @@ review, address its feedback one comment at a time, repeat up to 3 cycles.
 3. Waits for Copilot to complete, then collects its unresolved comments
 4. Addresses each comment one at a time: triage → test → fix → test → commit → reply → resolve
 5. Re-triggers Copilot review and repeats (max 3 cycles)
-6. Posts a final PR summary
+6. Posts a final PR summary. If the cap stops the loop while Copilot is still
+   finding critical issues, the summary lists the kinds of finding that kept
+   coming back and suggests reconsidering the approach
 
 If the `pr-review-loop` skill is also installed, delegates the inner loop to it.
 

@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI. The gh-copilot-review extension is recommended (gh extension install ChrisCarini/gh-copilot-review). PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.1.1"
+  version: "1.2.0"
 allowed-tools: Bash(gh:*)
 ---
 
@@ -163,10 +163,27 @@ Stop iterating if any of:
 - This pass found no MUST_FIX Copilot comments: the review has converged
 - A MUST_FIX Copilot comment from this pass is still unresolved (for example, its fix failed the safeguards): report it in the summary instead of starting another round
 - Only OUT_OF_SCOPE or NEEDS_CLARIFICATION Copilot comments remain (awaiting reviewer input)
-- This was the 3rd iteration
+- This was the 3rd iteration: the review did not converge, so step back (see below)
 
 Otherwise (this pass found MUST_FIX comments and all of them are now fixed),
 continue to the next iteration (back to step 2a) so Copilot can check the fixes.
+
+**Step back when the cap stops the loop.** Three rounds that each still find
+MUST_FIX issues suggest that the approach is the problem, not the individual
+lines. Do not start a 4th round. Instead:
+
+1. Group the MUST_FIX and SHOULD_FIX comments from all rounds by kind of
+   finding (for example "missing error handling", "unvalidated input",
+   "race on shared state"). Name the kind after the problem, not the file.
+2. List each kind that showed up in more than one round, with the round
+   numbers and the comment IDs for each.
+3. Suggest how the approach could change so that the whole kind goes away,
+   for example a different design, a shared helper, or a test that covers
+   the case. Present these as suggestions for the user to decide on. Do not
+   apply them.
+
+Put this in the "Not converged" section of the summary (Step 3), and tell
+the user in the session as well.
 
 ### Step 3 — Summary
 
@@ -196,6 +213,13 @@ Completed N Copilot review cycle(s).
 ### Unresolved MUST_FIX
 - <description> — <why it could not be fixed> (Copilot comment #<id>)
 - ...
+
+### Not converged
+Stopped at the 3-round cap while Copilot was still finding MUST_FIX issues.
+Kinds of finding that kept coming back:
+- <kind> — rounds <n>, <m> (Copilot comments #<id>, #<id>)
+- ...
+Consider: <suggested change of approach>
 ```
 
 Omit any section that has no entries.
