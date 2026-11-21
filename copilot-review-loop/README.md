@@ -8,7 +8,10 @@ review, address its feedback one comment at a time, repeat up to 3 cycles.
 
 1. Discovers project safeguards from project conventions and runs them
 2. Triggers a GitHub Copilot review on the PR
-3. Waits for Copilot to complete, then collects its unresolved comments
+3. Waits for Copilot to complete, then collects its unresolved comments.
+   A comment that repeats a finding already rejected or parked in an earlier
+   round gets a reply linking the earlier answer and is resolved without
+   being triaged again
 4. Addresses each comment one at a time: triage → test → fix → test → commit → reply → resolve
 5. Re-triggers Copilot review and repeats (max 3 cycles)
 6. Posts a final PR summary. If the cap stops the loop while Copilot is still
