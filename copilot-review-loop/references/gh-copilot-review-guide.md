@@ -59,7 +59,8 @@ once per page and prints one count per page instead of a single total.
 
 Record this count as the baseline. After triggering, poll until the count increases.
 
-Poll every 15 seconds. After 3 minutes with no new comments, stop and report timeout.
+Poll every 30 seconds. After 10 minutes with no new comments, stop and report
+timeout. Reviews of large PRs can take several minutes.
 
 ## Identifying Copilot comments
 
