@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check-skills:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Test the checker
+        working-directory: scripts
+        run: uv run --no-project --with pytest --with pyyaml pytest -q
+
+      - name: Check frontmatter and referenced files
+        run: uv run scripts/check_skills.py
+
+      - name: Package every skill
+        run: ./package-skill.sh
