@@ -253,7 +253,9 @@ Use this scope when no handoff exists.
 7. For every item, record both:
    - its classification;
    - its exact proposed action, such as fix; ask one question; reply only; reply
-     and resolve; create a follow-up issue; or take no remote action.
+     and resolve; create a follow-up issue; or take no remote action. For a
+     fix, list the other places with the same problem (SKILL.md Step 4) as
+     `file:line` in the action, so the session that fixes it fixes them too.
 8. Group only a proposed atomic cascade, and make the grouping visible for user
    approval.
 9. Write the provisional handoff with `Status: awaiting-approval` before
@@ -342,7 +344,8 @@ discovered the commands.
 
 For a code fix or atomic cascade:
 
-1. Implement the smallest complete approved change.
+1. Implement the smallest complete approved change, including the other
+   places that the approved action lists.
 2. Run targeted checks plus every project-mandated gate relevant to the change.
 3. If validation fails, attempt to correct the item. If it remains incomplete,
    preserve clearly attributable edits, record the concise failure and next
@@ -354,6 +357,9 @@ For a code fix or atomic cascade:
    with a GET, resolve only when approved, and verify resolution. Follow the
    normal workflow's commit and remote-write rules.
 6. Record each milestone immediately, including commit SHA and remote IDs.
+7. If another queued item flags a place that this commit fixed, record the
+   commit SHA on that item and leave it in the queue. Its own session replies
+   with a link to the commit and resolves it, with no code change.
 
 For `NEEDS_CLARIFICATION`, `PARK`, `OUT_OF_SCOPE`, or a no-op acknowledgment:
 
