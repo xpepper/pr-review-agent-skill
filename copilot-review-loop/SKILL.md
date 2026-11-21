@@ -81,7 +81,7 @@ gh pr review --request copilot
 
 Read `references/gh-copilot-review-guide.md` for the polling approach.
 
-Record the current count of unresolved Copilot comments before triggering.
+Record the current count of top-level Copilot comments before triggering.
 Poll every 30 seconds until new comments appear. If no new comments after 10 minutes,
 stop and report timeout — do not proceed.
 
@@ -102,7 +102,8 @@ gh api --paginate repos/{owner}/{repo}/pulls/{pr}/comments \
 The Copilot comments are the entries with `copilot == true` and no
 `in_reply_to_id`. GitHub posts Copilot's inline comments as the bot user
 `Copilot`, not `copilot[bot]`, so the filter matches any bot whose login starts
-with "copilot" (case-insensitive) rather than one exact login. Use the count recorded before triggering (step 2b) to identify which are new.
+with "copilot" (case-insensitive) rather than one exact login. Use the count
+recorded before triggering (step 2b) to identify which are new.
 
 If there are no unresolved Copilot comments, stop — nothing to do.
 

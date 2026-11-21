@@ -48,10 +48,14 @@ After triggering, Copilot review takes 30–120 seconds. Poll until new
 Copilot review comments appear:
 
 ```bash
-# Count current Copilot comments
-gh api repos/{owner}/{repo}/pulls/{pr}/comments \
-  --jq '[.[] | select(.user.type == "Bot" and (.user.login | ascii_downcase | startswith("copilot")))] | length'
+# Count current top-level Copilot comments (replies excluded)
+gh api --paginate --slurp repos/{owner}/{repo}/pulls/{pr}/comments \
+  | jq '[.[][] | select(.in_reply_to_id == null)
+    | select(.user.type == "Bot" and (.user.login | ascii_downcase | startswith("copilot")))] | length'
 ```
+
+Use `--slurp` with a separate `jq`, not `--jq`: with `--paginate`, `--jq` runs
+once per page and prints one count per page instead of a single total.
 
 Record this count as the baseline. After triggering, poll until the count increases.
 
@@ -64,7 +68,7 @@ the review itself as `copilot-pull-request-reviewer[bot]`. Neither is
 `copilot[bot]`. Match any bot whose login starts with "copilot"
 (case-insensitive), so a future rename does not break the filter:
 ```bash
-gh api repos/{owner}/{repo}/pulls/{pr}/comments \
+gh api --paginate repos/{owner}/{repo}/pulls/{pr}/comments \
   --jq '.[] | select(.user.type == "Bot" and (.user.login | ascii_downcase | startswith("copilot")))'
 ```
 
