@@ -41,6 +41,7 @@ Users trigger this skill with prompts like:
   Fallback if not installed: `gh pr review --request copilot`
 - `pr-review-loop` skill (optional — if installed, the inner loop is delegated to it)
 - The PR branch must be checked out locally
+- `{tmp}` in the commands below is the directory for temporary files: the session's scratch directory when the harness provides one, otherwise `/tmp`.
 
 ## Process
 
@@ -124,16 +125,16 @@ For each MUST_FIX and SHOULD_FIX comment:
 
    **Clarification question format:**
    ```bash
-   cat > /tmp/pr-review-reply-{comment_id}.md <<'EOF'
+   cat > "{tmp}/pr-review-reply-{comment_id}.md" <<'EOF'
    Thanks for the feedback! Before I make a change, I want to make sure I understand what you're after:
 
    <one specific, focused question>
    EOF
 
-   jq -n --rawfile body /tmp/pr-review-reply-{comment_id}.md '{body:$body}' > /tmp/pr-review-reply-{comment_id}.json
+   jq -n --rawfile body "{tmp}/pr-review-reply-{comment_id}.md" '{body:$body}' > "{tmp}/pr-review-reply-{comment_id}.json"
 
    gh api repos/{owner}/{repo}/pulls/{pull_number}/comments/{comment_id}/replies \
-     --input /tmp/pr-review-reply-{comment_id}.json
+     --input "{tmp}/pr-review-reply-{comment_id}.json"
    ```
 
    Ask exactly **one** question. Leave the thread unresolved so the reviewer's answer re-surfaces it.

@@ -156,19 +156,21 @@ Check whether `PR_COMMENTS_PLAN.md` exists in the current directory.
 
 ## NEEDS_CLARIFICATION handling
 
+`{tmp}` in the commands below is the directory for temporary files: the session's scratch directory when the harness provides one, otherwise `/tmp`.
+
 1. Post one focused question as a reply to the comment. Do not implement anything.
    ```bash
-   cat > /tmp/pr-review-reply-<comment-id>.md <<'EOF'
+   cat > "{tmp}/pr-review-reply-<comment-id>.md" <<'EOF'
    Thanks for the feedback! Before I make a change, I want to make sure I understand what you're after:
 
    <one specific, focused question>
    EOF
 
-   jq -n --rawfile body /tmp/pr-review-reply-<comment-id>.md '{body:$body}' \
-     > /tmp/pr-review-reply-<comment-id>.json
+   jq -n --rawfile body "{tmp}/pr-review-reply-<comment-id>.md" '{body:$body}' \
+     > "{tmp}/pr-review-reply-<comment-id>.json"
 
    gh api repos/{owner}/{repo}/pulls/{pull_number}/comments/<comment-id>/replies \
-     --input /tmp/pr-review-reply-<comment-id>.json
+     --input "{tmp}/pr-review-reply-<comment-id>.json"
    ```
    Ask exactly **one** question. Do not resolve the thread.
 2. In `PR_COMMENTS_PLAN.md`, mark the item as `[asked: <brief question summary>]`.
