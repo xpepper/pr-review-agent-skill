@@ -191,7 +191,9 @@ For each MUST_FIX and SHOULD_FIX comment:
      git diff "origin/$base...HEAD"
      ```
      Leave instances in code that the PR did not touch. List each extra place
-     that you fixed in the reply (step 6).
+     that you fixed in the reply (step 6). If a later comment in this pass
+     flags one of those places, it needs no further change: reply to it with
+     a link to the commit and resolve it.
    - If mid-assessment the intent is genuinely ambiguous: post one focused question (see format below), do **not** resolve the thread, skip steps 4–8, move on.
 
    **Clarification question format:**
