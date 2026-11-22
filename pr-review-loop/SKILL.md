@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI or any other tool to interact with GitHub. PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.10.0"
+  version: "1.10.1"
 allowed-tools: Bash
 ---
 
@@ -147,14 +147,15 @@ Triage all comments before acting on any.
 ```bash
 base=$(gh pr view {pr_number} --json baseRefName --jq '.baseRefName')
 git fetch origin "$base"
-result=pre-existing
+result=unknown
 for c in $(git blame -L {startLine},{line} --porcelain HEAD -- "{path}" | grep -E '^[0-9a-f]{40} ' | cut -d' ' -f1 | sort -u); do
+  [ "$result" = unknown ] && result=pre-existing
   git merge-base --is-ancestor "$c" "origin/$base" || result=introduced
 done
 echo "$result"
 ```
 
-A range that mixes new and old lines counts as introduced.
+A range that mixes new and old lines counts as introduced. The check prints `unknown` when `git blame` finds no commits, usually because the path or the line range is wrong (`git blame` then prints a `fatal:` line that says why). Triage an `unknown` comment as usual, never as a pre-existing PARK.
 
 If the code is pre-existing and the concern is valid, classify the comment as PARK: fixing old code in this PR widens its scope, and later review rounds keep finding more of it. If the concern does not hold, classify it as OUT_OF_SCOPE as usual, with no follow-up issue. The exception is when the PR's own change makes the problem worse or newly reachable (for example, a new caller of an old buggy function). In that case, triage the comment as usual. Skip the check for issue comments, for threads on the `LEFT` side (there `line` refers to the base file, not HEAD), and for threads whose `line` is null (outdated).
 
@@ -182,7 +183,7 @@ The rationale is where feedback is challenged rather than blindly accepted: show
 
 For a comment with a ` ```suggestion ` block, say in the rationale whether the fix applies the suggestion as written, adapts it, or rejects it, and why (e.g. "adapts the suggestion: it calls `foo()`, which this module does not import").
 
-For a row parked because the code is pre-existing, say so in the rationale and state that a follow-up issue will be opened (e.g. "pre-existing on main since abc1234, will open a follow-up issue"). Approving the row approves opening that issue.
+For a row parked because the code is pre-existing, say so in the rationale and state that a follow-up issue will be opened (e.g. "pre-existing on main since abc1234, will open a follow-up issue"). Approving the row approves opening that issue. For a row where the check printed `unknown`, say so in the rationale (e.g. "pre-existing check returned unknown: `git blame` found no such path"), so the user can see that the row was triaged without it.
 
 For a row with other instances of the same problem, list them in the rationale (e.g. "same unhandled error also at `b.py:40` and `c.py:12`, fixed in the same commit"). Approving the row approves fixing those places too.
 
