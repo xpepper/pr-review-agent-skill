@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI or any other tool to interact with GitHub. PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.10.1"
+  version: "1.10.2"
 allowed-tools: Bash
 ---
 
@@ -131,7 +131,7 @@ gh api repos/{owner}/{repo}/issues/{pr_number}/comments \
   | jq '[.[] | {id: .id, author: .user.login, body: .body, created_at: .created_at, type: "issue-comment"}]'
 ```
 
-> Before triaging, filter out comments by the PR author (they are not reviewer feedback) and known bot accounts. The `author` field in the transformed output helps with this.
+> Before triaging, filter out known bot accounts, and comments by the PR author that are not reviewer feedback, such as replies and status notes. A review that the PR author's account posts, for example from a review agent, is reviewer feedback: keep it. The `author` field in the transformed output helps with this.
 
 Triage items from both lists. Track which type each item is — it affects how you reply (Step 6f) and close (Step 6g).
 
