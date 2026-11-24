@@ -131,7 +131,7 @@ gh api repos/{owner}/{repo}/issues/{pr_number}/comments \
   | jq '[.[] | {id: .id, author: .user.login, body: .body, created_at: .created_at, type: "issue-comment"}]'
 ```
 
-> Before triaging, filter out known bot accounts. Also filter out the comments by the PR author that are not reviewer feedback, such as replies and non-review notes. A review that the PR author's account posts, for example from a review agent, is reviewer feedback: keep it. The `author` field cannot tell the two apart, because both come from the same account. In a review thread, use `replyTo`: a comment by the PR author with no `replyTo` value starts the thread and is a review, while one with a `replyTo` value is a reply. Issue comments have no such field, so judge them from the body.
+> Before triaging, filter out the status notifications and summaries that bots post, but keep their substantive review comments. Also filter out the comments by the PR author that are not reviewer feedback, such as replies and non-review notes. A review that the PR author's account posts, for example from a review agent, is reviewer feedback: keep it. The `author` field cannot tell the two apart, because both come from the same account. In a review thread, use `replyTo`: a comment by the PR author with no `replyTo` value starts the thread and is a review, while one with a `replyTo` value is a reply. Issue comments have no such field, so judge them from the body.
 
 Triage items from both lists. Track which type each item is — it affects how you reply (Step 6f) and close (Step 6g).
 
