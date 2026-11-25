@@ -85,7 +85,7 @@ query($owner:String!, $name:String!, $number:Int!) {
       }
     }
   }
-}' -f owner='{owner}' -f name='{repo}' -F number={pr_number}
+}' -F owner='{owner}' -F name='{repo}' -F number={pr_number}
 ```
 
 Use the **PR body** as the default spec unless the user supplied a different
