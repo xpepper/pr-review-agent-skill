@@ -2,7 +2,7 @@
 name: pr-full-review
 description: Use only when the user explicitly invokes pr-full-review (for example /pr-full-review) to run a full multi-lens PR review (Standards and Spec against the PR body, Balanced Coupling, refactoring, and duplication), classify all findings, and let the user choose whether to fix items locally or post inline review threads on GitHub. Manual-only; do not start it from context relevance. For an interactive file-by-file walkthrough in runtime-flow order, use guided-flow-review; for addressing existing PR review comments, use pr-review-grill or pr-review-loop.
 license: MIT
-compatibility: Requires git and gh CLI; optional Node 22+ for duplication-review clone detection (jscpd). PR branch must be checked out locally.
+compatibility: Requires git, gh CLI and python3; optional Node 22+ for duplication-review clone detection (jscpd). PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
   version: "1.0.0"

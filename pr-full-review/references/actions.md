@@ -125,7 +125,8 @@ duplicate reviews):
 gh api --method POST \
   "repos/{owner}/{repo}/pulls/{pr_number}/reviews" \
   --input "{tmp}/pr-full-review-{pr_number}.json" \
-  > "{tmp}/pr-full-review-{pr_number}-response.json"
+  --jq '"\(.id) \(.html_url)"' \
+  > "{tmp}/pr-full-review-{pr_number}-response.txt"
 ```
 
 Verify the posted review and every created thread via `GET`. The review's own
@@ -133,7 +134,8 @@ comments endpoint returns no `line` or `side`, so filter the PR's comments by
 review ID instead:
 
 ```bash
-review_id="$(jq '.id' "{tmp}/pr-full-review-{pr_number}-response.json")"
+read -r review_id review_url < "{tmp}/pr-full-review-{pr_number}-response.txt"
+echo "$review_url"
 gh api "repos/{owner}/{repo}/pulls/{pr_number}/comments" --paginate \
   --jq ".[] | select(.pull_request_review_id == ${review_id}) | \"\(.id) \(.path):\(.line) \(.side) \(.html_url)\""
 ```
