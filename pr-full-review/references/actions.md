@@ -71,13 +71,14 @@ discussion or follow-up.
 ### 1. Verify every target line sits inside the PR diff
 
 GitHub's Pull Request Review API rejects inline comments whose `line` is not
-part of a diff hunk. Compute the valid `RIGHT`-side line ranges from the exact
-PR diff before building the payload:
+part of a diff hunk. Compute the valid `RIGHT`-side line ranges from the diff
+at `headRefOid`, the commit that the review is posted on. Do not use local
+`HEAD`: it differs from `headRefOid` when local fixes are not pushed yet.
 
 ```bash
 python3 - <<'EOF'
 import re, subprocess
-diff = subprocess.check_output(["git", "diff", "origin/<base>...HEAD"]).decode()
+diff = subprocess.check_output(["git", "diff", "origin/<base>...<headRefOid>"]).decode()
 cur_file, hunks = None, {}
 for line in diff.splitlines():
     if line.startswith("+++ b/"):
