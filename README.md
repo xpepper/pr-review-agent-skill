@@ -40,6 +40,23 @@ npx skills add xpepper/pr-review-agent-skill/guided-flow-review
 
 ---
 
+### PR Full Review
+
+Runs a multi-lens review of a pull request (Standards and Spec against the PR
+body, Balanced Coupling, refactoring, and duplication), classifies every
+verified finding, and stops at a decision gate so you can either fix selected
+items locally right away or publish them as inline review threads on GitHub.
+Manual-only (`/pr-full-review`).
+
+**Install:**
+```bash
+npx skills add xpepper/pr-review-agent-skill/pr-full-review
+```
+
+[See skill README →](pr-full-review/README.md)
+
+---
+
 ### PR Review Loop
 
 Addresses all open PR review comments one at a time using an opinionated, resumable workflow.
