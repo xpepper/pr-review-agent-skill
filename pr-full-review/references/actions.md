@@ -128,12 +128,14 @@ gh api --method POST \
   > "{tmp}/pr-full-review-{pr_number}-response.json"
 ```
 
-Verify the posted review and every created thread via `GET`:
+Verify the posted review and every created thread via `GET`. The review's own
+comments endpoint returns no `line` or `side`, so filter the PR's comments by
+review ID instead:
 
 ```bash
 review_id="$(jq '.id' "{tmp}/pr-full-review-{pr_number}-response.json")"
-gh api "repos/{owner}/{repo}/pulls/{pr_number}/reviews/${review_id}/comments" \
-  --jq '.[] | "\(.id) \(.path):\(.line) \(.html_url)"'
+gh api "repos/{owner}/{repo}/pulls/{pr_number}/comments" --paginate \
+  --jq ".[] | select(.pull_request_review_id == ${review_id}) | \"\(.id) \(.path):\(.line) \(.side) \(.html_url)\""
 ```
 
 Report the review URL and every posted thread link back to the user.
