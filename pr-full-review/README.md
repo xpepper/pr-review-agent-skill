@@ -100,6 +100,8 @@ npx skills add xpepper/duplication-review
 ```
 
 Add `--global` to each command to install the skills for all your projects.
+When a companion skill is missing, the review says so in its header, with the
+install command.
 Without `duplication-review`, the duplication lens uses a clone detector that
 the repository already configures, if there is one, and otherwise falls back to
 a manual reuse search.

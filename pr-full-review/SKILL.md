@@ -121,10 +121,20 @@ When the runtime supports parallel subagents, run **Standards**, **Spec**, and
 pollute one another, while running **Code Refactor Review** and **Duplication
 Review** alongside them.
 
-When sibling skills are installed (`code-review`, `balanced-coupling`,
-`code-refactor-review`, `duplication-review`), honor their latest rules; use
+When sibling skills are installed, honor their latest rules; use
 [references/lenses.md](references/lenses.md) as the authoritative fallback when
-any companion skill is absent.
+any companion skill is absent. A companion skill counts as installed when it is
+in your list of available skills, or when its `SKILL.md` exists in one of the
+skill directories that lens 4b searches (`duplication-review` is manual-only,
+so it may be missing from the list). Note each missing one for the report
+header (Step 4):
+
+| Skill | Install command |
+|-------|-----------------|
+| `code-review` | `npx skills add mattpocock/skills --skill code-review` |
+| `balanced-coupling` | `npx skills add vladikk/modularity --skill balanced-coupling` |
+| `code-refactor-review` | `npx skills add xpepper/code-refactor-review` |
+| `duplication-review` | `npx skills add xpepper/duplication-review` |
 
 Completion criterion for Step 2: all four lenses have completed, every touched
 clone family has been read and ruled, and every repo standards file has been
@@ -161,7 +171,9 @@ Before presenting anything:
 Print the complete review in chat with these sections:
 
 1. **Header**: PR number/link, reviewed SHA (`headRefOid`), base merge-base,
-   diff stats, and CI status.
+   diff stats, and CI status. If any companion skill is missing (Step 2), add
+   one line that names each missing skill with its install command and says
+   that its lens used the bundled fallback. Never install them yourself.
 2. **Classified Findings** (compact numbered table, highest severity first):
    `| # | Class (severity) | Location | Lenses | Summary | Suggested action |`
 3. **`## Standards`** and **`## Spec`** kept strictly separate (never merged or
