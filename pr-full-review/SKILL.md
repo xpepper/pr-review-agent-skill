@@ -194,17 +194,11 @@ GitHub write API.
 ### 5. Execute the chosen action(s)
 
 Read [references/actions.md](references/actions.md) and execute only what the
-user approved:
+user approved. It holds the full procedure for each option:
 
-- **Local fixes**: run repository safeguards, protect unrelated dirty files,
-  implement each approved item (or cascade) in one focused Conventional Commit
-  with tests, re-run safeguards after each fix, and never push unless asked.
-- **Inline PR threads**: verify every target `(path, line)` sits inside a
-  `RIGHT` diff hunk, submit one atomic `COMMENT` review on `headRefOid` via a
-  JSON file input, and verify the posted threads via `GET` (never re-POST).
-- **Split**: apply local fixes first if the user wants threads only for
-  unaddressed questions/design items, or post threads only on unchanged lines
-  matching `headRefOid`.
+- **Fix selected items locally now**: Action A.
+- **Post selected items as inline review threads on the PR**: Action B.
+- **Split**: Action C.
 
 ## Do Not
 
