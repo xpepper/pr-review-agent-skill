@@ -78,16 +78,31 @@ the per-lens reports, then **stops and asks** how you want to proceed:
   or design trade-offs as PR threads.
 - **Done (review only)**: leave both the repository and GitHub untouched.
 
-## Companion skills
+## Companion skills (recommended)
 
 `pr-full-review` works standalone using its bundled
-[`references/lenses.md`](references/lenses.md), and integrates with these
-optional skills when installed:
+[`references/lenses.md`](references/lenses.md). When a companion skill is
+installed, the matching lens follows that skill's latest rules instead of the
+bundled fallback, so installing them is recommended:
 
-- `code-review` (two-axis Standards + Spec)
-- `balanced-coupling` (Balanced Coupling model reference)
-- `code-refactor-review` (refactoring and slop lenses)
-- `duplication-review` (bundled `scripts/clones.mjs` + `jscpd` scanner)
+| Skill | Used by | Source |
+|-------|---------|--------|
+| `code-review` | Standards and Spec lenses | [mattpocock/skills](https://github.com/mattpocock/skills) |
+| `balanced-coupling` | Balanced Coupling lens | [vladikk/modularity](https://github.com/vladikk/modularity) |
+| `code-refactor-review` | Code Refactor Review lens | [xpepper/code-refactor-review](https://github.com/xpepper/code-refactor-review) |
+| `duplication-review` | Duplication Review lens (`scripts/clones.mjs`, `jscpd` scanner) | [xpepper/duplication-review](https://github.com/xpepper/duplication-review) |
+
+```bash
+npx skills add mattpocock/skills --skill code-review
+npx skills add vladikk/modularity --skill balanced-coupling
+npx skills add xpepper/code-refactor-review
+npx skills add xpepper/duplication-review
+```
+
+Add `--global` to each command to install the skills for all your projects.
+Without `duplication-review`, the duplication lens uses a clone detector that
+the repository already configures, if there is one, and otherwise falls back to
+a manual reuse search.
 
 ## Prerequisites
 
