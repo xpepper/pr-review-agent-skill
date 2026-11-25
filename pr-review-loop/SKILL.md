@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires gh CLI or any other tool to interact with GitHub. PR branch must be checked out locally.
 metadata:
   author: Pietro Di Bello
-  version: "1.10.2"
+  version: "1.11.0"
 allowed-tools: Bash
 ---
 
@@ -131,7 +131,7 @@ gh api repos/{owner}/{repo}/issues/{pr_number}/comments \
   | jq '[.[] | {id: .id, author: .user.login, body: .body, created_at: .created_at, type: "issue-comment"}]'
 ```
 
-> Before triaging, filter out the status notifications that bots post, and the bot summaries that contain no request or claim to assess, but keep their substantive review comments. Also filter out the comments by the PR author that are not reviewer feedback, such as replies and non-review notes. A review that the PR author's account posts, for example from a review agent, is reviewer feedback: keep it. The `author` field cannot tell the two apart, because both come from the same account. In a review thread, use `replyTo`: a comment by the PR author with no `replyTo` value starts the thread, and its body tells whether it is a review or a non-review note (for example, the author explaining a choice to reviewers). One with a `replyTo` value is a reply. Filtering out a reply means that it does not become a triage item of its own. Keep it in its thread, because triage reads the whole thread, including a question that the loop already asked (Step 6c) and any answer to it. Issue comments have no such field, so judge them from the body. This loop also posts under the PR author's account, so on a resume, drop its own issue comments: the summary that starts with `## PR Review Loop — Summary` (Step 9), and each reply that quotes an earlier comment (Step 6f). Drop the comment that the reply quotes as well, because the loop has already handled it.
+> Before triaging, filter out the status notifications that bots post, and the bot summaries that contain no request or claim to assess, but keep their substantive review comments. Also filter out the comments by the PR author that are not reviewer feedback, such as replies and non-review notes. A review that the PR author's account posts, for example from a review agent, is reviewer feedback: keep it. The `author` field cannot tell the two apart, because both come from the same account. In a review thread, use `replyTo`: a comment by the PR author with no `replyTo` value starts the thread, and its body tells whether it is a review or a non-review note (for example, the author explaining a choice to reviewers). One with a `replyTo` value is a reply. Filtering out a reply means that it does not become a triage item of its own. Keep it in its thread, because triage reads the whole thread, including a question that the loop already asked (Step 6c) and any answer to it. Issue comments have no such field, so judge them from the body. This loop also posts under the PR author's account, so on a resume, drop its own issue comments: the summary that starts with `### PR Review Loop: Summary` (Step 9; earlier versions of this skill posted it as `## PR Review Loop — Summary`), and each reply that quotes an earlier comment (Step 6f). Drop the comment that the reply quotes as well, because the loop has already handled it.
 
 Triage items from both lists. Track which type each item is — it affects how you reply (Step 6f) and close (Step 6g).
 
@@ -474,29 +474,49 @@ Record the update in the Step 9 summary (an "Updated PR body to reflect …" lin
 Post a final comment on the PR summarising:
 
 ```
-## PR Review Loop — Summary
+### PR Review Loop: Summary
 
-### Fixed
+<details>
+<summary><strong>{n} fixed</strong></summary>
+
 - [commit abc1234] Renamed `foo` to `bar` (comment by @alice)
 - ...
 
-### Parked
-- Refactor of X module deferred — tracked in #<issue> (comment by @bob)
+</details>
+
+<details>
+<summary><strong>{n} parked</strong></summary>
+
+- Refactor of X module deferred: tracked in #<issue> (comment by @bob)
 - ...
 
-### Rejected
+</details>
+
+<details>
+<summary><strong>{n} rejected</strong></summary>
+
 - Suggestion to use Y rejected: project convention is Z (comment by @carol)
 - ...
 
-### Awaiting Clarification
-- Asked @alice: "Did you mean to rename this everywhere, or just at the call site?" — thread left open
+</details>
+
+<details>
+<summary><strong>{n} awaiting clarification</strong></summary>
+
+- Asked @alice: "Did you mean to rename this everywhere, or just at the call site?" (thread left open)
 - ...
 
-### PR Body
-- Updated PR body to reflect <what changed> (or omit this section if no drift)
+</details>
+
+<details>
+<summary><strong>PR body updated</strong></summary>
+
+- Updated PR body to reflect <what changed>
+
+</details>
 ```
 
-Omit any section that has no entries.
+Omit any section that has no entries; omit "PR body updated" when Step 8 found no drift. Each section is a `<details>` block, which GitHub shows collapsed, so a reader sees only the counts until they expand one. Keep the blank line after `</summary>`: without it, GitHub shows the list as raw text.
 
 Use a body file to avoid shell interpolation:
 ```bash
