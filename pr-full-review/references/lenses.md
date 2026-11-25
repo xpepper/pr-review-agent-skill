@@ -155,7 +155,10 @@ clone detector (`jscpd`, PMD CPD, etc.) that runs without installing packages;
 if none is available, state that in one line and rely on the manual reuse search
 in 4a.
 
-When `clones.mjs` runs:
+If `clones.mjs` runs but fails, relay its error message in one line and rely on
+the manual reuse search in 4a. Do not retry it.
+
+When `clones.mjs` succeeds:
 
 1. Record `jscpd` version, `totals` (`clones`, `duplicatedLines`, `percentage`,
    `kinds`), and `renamed.clones`.
