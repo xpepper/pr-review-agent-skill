@@ -86,3 +86,17 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 - `chore:` — gitignore, project config, maintenance
 
 Subject line: imperative mood, lowercase, no period, max 72 chars.
+
+## Agent skills
+
+### Issue tracker
+
+Issues are tracked in GitHub Issues for `xpepper/pr-review-agent-skill` via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default triage labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context (`CONTEXT.md` and `docs/adr/` at the repo root). See `docs/agents/domain.md`.
